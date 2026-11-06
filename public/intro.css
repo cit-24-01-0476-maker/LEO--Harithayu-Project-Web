@@ -96,3 +96,13 @@ body.page-arriving .hero-note{animation:arrival-item 1s 1.2s both}
 .mangrove-intro .intro-subtitle{color:#e0e9d3}.mangrove-intro .intro-subtitle>span:first-child{color:#e0e9d3;letter-spacing:.7px}
 .mangrove-intro .intro-actions{margin-top:13px}.mangrove-intro .intro-skip{color:#cedac4;text-decoration:none;border-bottom:1px solid #b7c7a16b;padding-bottom:5px}
 @media(max-width:650px){.intro-brand-logo{width:185px;height:123px}.mangrove-intro .intro-copy{gap:10px}html[lang=en] .mangrove-intro h1{font-size:48px}.mangrove-intro .intro-subtitle>span:first-child{font-size:11px;letter-spacing:.3px}}
+
+/* Large living logo: lettering and roots remain still, crown and water move separately. */
+.intro-brand-logo{width:min(620px,82vw);height:auto;max-height:48svh;overflow:visible}
+.logo-leaf-sway{transform-origin:350px 500px;animation:logo-breeze 5.8s ease-in-out infinite}
+.logo-water-flow{animation:logo-current 7s ease-in-out infinite}
+.mangrove-intro .intro-copy{gap:7px}html[lang=en] .mangrove-intro h1{font-size:clamp(35px,3.6vw,48px);line-height:1.2}.mangrove-intro .intro-subtitle{margin-top:5px}
+@keyframes logo-breeze{0%,100%{transform:rotate(-.6deg) skewX(-.25deg)}50%{transform:rotate(.8deg) skewX(.3deg)}}
+@keyframes logo-current{0%,100%{transform:translateX(-3px);opacity:.94}50%{transform:translateX(4px);opacity:1}}
+@media(max-width:650px){.intro-brand-logo{width:90vw;height:auto;max-height:43svh}.mangrove-intro .intro-copy{left:12px;right:12px;gap:9px}html[lang=en] .mangrove-intro h1{font-size:36px}}
+@media(prefers-reduced-motion:reduce){.logo-leaf-sway,.logo-water-flow{animation:none!important;filter:none!important}}
