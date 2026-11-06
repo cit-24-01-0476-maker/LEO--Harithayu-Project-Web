@@ -76,3 +76,5 @@ The planting date, exact Mannar location, ecological partner, permissions and mo
 - Typography: Google Fonts DM Sans and Noto Sans Sinhala. Local system fallbacks work without a connection; fonts make external requests when available.
 
 Do not expose the development server directly to the internet without the HTTPS and account configuration above. Admin passwords and donor status tokens should be treated as credentials. Donors can recover their pending status in the same browser; cross-device recovery and automated refund handling are not implemented.
+
+Audio effects: Water scroll is an edited 3-second excerpt of Dsw4's public-domain Waves.ogg (https://commons.wikimedia.org/wiki/File:Waves.ogg). Bird touch is a 2.2-second excerpt of Digweed1's CC0 Common Nightingale's song 2.ogg (https://commons.wikimedia.org/wiki/File:Common_Nightingale%27s_song_2.ogg). These are decorative nature recordings, not claims about local Sri Lankan species. Clips are trimmed, normalized and faded. Logo transparency is rendered from the original logo using an inline SVG white-to-alpha filter; original artwork is unchanged.

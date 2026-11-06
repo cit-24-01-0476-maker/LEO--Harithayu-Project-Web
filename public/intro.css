@@ -76,3 +76,14 @@ body.page-arriving .hero-note{animation:arrival-item 1s 1.2s both}
 @media(prefers-reduced-motion:reduce){.mangrove-intro.leaving{clip-path:none;transition:none}body.page-arriving main,body.page-arriving .site-header,body.page-arriving .hero-content>*{animation:none!important}}
 
 .sound-toggle{position:fixed;right:20px;bottom:20px;z-index:150;background:#102f27e8;color:#e2ecd1;border:1px solid #a6bd8655;border-radius:24px;padding:11px 17px;font:11px 'DM Sans','Noto Sans Sinhala',sans-serif;box-shadow:0 4px 20px #0002;backdrop-filter:blur(8px)}.sound-toggle:hover{background:#254a37}.sound-toggle:focus-visible{outline:2px solid #cce0a4;outline-offset:4px}@media(max-width:650px){.sound-toggle{right:12px;bottom:12px;padding:9px 13px;font-size:10px}}
+
+/* Centered brand-first autoplay presentation. */
+.mangrove-intro .intro-copy{top:50%;bottom:auto;left:20px;right:20px;transform:translateY(-50%);text-align:center;gap:8px}
+.intro-brand-logo{display:block;width:190px;height:126px;flex-shrink:0;filter:drop-shadow(0 3px 5px #0006);animation:brand-emerge 1s ease both;order:0}
+.mangrove-intro h1{order:1;animation:brand-emerge 1.1s ease both;margin:0}
+.mangrove-intro .intro-subtitle{order:2;margin:0}.mangrove-intro .intro-phase{order:3;margin:12px 0 0}.intro-actions{order:4;justify-content:center;margin-top:7px}.intro-growth-track{order:5;margin-top:12px}
+.mangrove-intro.growing .intro-enter{display:none}.mangrove-intro .intro-seed{display:none}
+.intro-vignette{background:radial-gradient(ellipse at center,rgba(3,19,15,.46),rgba(3,19,15,.12) 65%),linear-gradient(0deg,rgba(3,19,15,.55),transparent 65%)}
+@keyframes brand-emerge{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:650px){.mangrove-intro .intro-copy{top:50%;bottom:auto;left:18px;right:18px}.intro-brand-logo{width:150px;height:100px}html[lang=en] .mangrove-intro h1{font-size:44px}.mangrove-intro .intro-phase{max-width:290px;line-height:1.8}.intro-vignette{background:radial-gradient(ellipse at center,rgba(3,19,15,.55),rgba(3,19,15,.12) 75%)}}
+@media(prefers-reduced-motion:reduce){.intro-brand-logo,.mangrove-intro h1{animation:none!important}}
