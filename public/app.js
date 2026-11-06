@@ -1,4 +1,5 @@
 import { islandPolygons } from './sri-lanka-map.js';
+import { createMangroveIntro } from './mangrove-intro.js';
 
 let language=localStorage.getItem('harithayu-language')==='en'?'en':'si';
 let config={enabled:false,price:100,target:500},summary={amount:0,seedlings:0,contributions:0,donors:[]},summaryLoaded=false;
@@ -8,12 +9,17 @@ const t=(si,en)=>language==='si'?si:en;
 const money=n=>`${language==='si'?'රු.':'LKR'} ${Number(n).toLocaleString('en-LK')}`;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const intro=$('#intro');
-let enterTimer;
-function enter(skip=false){if(intro.classList.contains('growing')||intro.hidden)return;intro.classList.add('growing');clearTimeout(enterTimer);enterTimer=setTimeout(()=>{intro.classList.add('leaving');setTimeout(()=>{intro.hidden=true;document.body.classList.remove('intro-open');$('#main').setAttribute('tabindex','-1');$('#main').focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});},reduced?0:650);},skip||reduced?0:950);sessionStorage.setItem('harithayu-visited','1');}
-if(sessionStorage.getItem('harithayu-visited'))intro.hidden=true;else{document.body.classList.add('intro-open');$('#enter-site').focus();}
+const introVisitKey='harithayu-intro-v2';
+let enterTimer,closeTimer,introAnimation;
+const introPhases=[['මුල් බැසගනී. බලාපොරොත්තු වැඩෙයි.','Roots take hold. Hope begins.'],['මුලින් කඳක්. ඉන්පසු හරිත හෙටක්.','A living trunk. A greener tomorrow.'],['අතු විහිදෙයි. ජීවිතයට ඉඩ සැදෙයි.','Branches unfold. Life finds a home.'],['පුංචි පැළයක්. හෙටට හුස්මක්.','A little seedling. A living tomorrow.']];
+function introInert(value){$$('header.site-header,main#main,body>footer').forEach(el=>el.inert=value);}
+function prepareIntro(){intro.hidden=false;intro.classList.remove('growing','leaving');$('#enter-site').disabled=false;$('#enter-text').disabled=false;$('#intro-phase').textContent=t('එක් ස්පර්ශයකින්, ජීවිතයට ඇරඹුමක්.','One touch. A new beginning.');document.body.classList.add('intro-open');introInert(true);if(!introAnimation)introAnimation=createMangroveIntro($('#mangrove-scene'),{reducedMotion:reduced,onStage:phase=>{$('#intro-phase').textContent=phase<0?t('ජීවිතය අවදි වෙමින්…','Life is awakening…'):t(...introPhases[phase]);}});introAnimation.reset();$('#enter-site').focus({preventScroll:true});}
+function finishIntro(immediate=false){if(intro.hidden||intro.classList.contains('leaving'))return;clearTimeout(enterTimer);intro.classList.add('leaving');closeTimer=setTimeout(()=>{intro.hidden=true;introAnimation?.stop();document.body.classList.remove('intro-open');introInert(false);$('#main').setAttribute('tabindex','-1');$('#main').focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});},immediate||reduced?0:1000);sessionStorage.setItem(introVisitKey,'1');}
+function enter(skip=false){if(intro.hidden)return;if(skip){finishIntro(true);return;}if(intro.classList.contains('growing'))return;intro.classList.add('growing');$('#enter-site').disabled=true;$('#enter-text').disabled=true;$('#skip-intro').focus({preventScroll:true});introAnimation?.start(()=>{enterTimer=setTimeout(()=>finishIntro(),reduced?0:550);});}
+if(sessionStorage.getItem(introVisitKey))intro.hidden=true;else prepareIntro();
 $('#enter-site').addEventListener('click',()=>enter());$('#enter-text').addEventListener('click',()=>enter());$('#skip-intro').addEventListener('click',()=>enter(true));
-intro.addEventListener('keydown',e=>{if(e.key==='Escape'){enter(true);return;}if(e.key==='Tab'){const buttons=[...intro.querySelectorAll('button')];if(e.shiftKey && document.activeElement===buttons[0]){e.preventDefault();buttons.at(-1).focus();}else if(!e.shiftKey && document.activeElement===buttons.at(-1)){e.preventDefault();buttons[0].focus();}}});
-$('#replay-intro').addEventListener('click',()=>{intro.hidden=false;intro.classList.remove('growing','leaving');document.body.classList.add('intro-open');$('#enter-site').focus();});
+intro.addEventListener('keydown',e=>{if(e.key==='Escape'){enter(true);return;}if(e.key==='Tab'){const buttons=[...intro.querySelectorAll('button')].filter(b=>!b.disabled);if(e.shiftKey && document.activeElement===buttons[0]){e.preventDefault();buttons.at(-1).focus();}else if(!e.shiftKey && document.activeElement===buttons.at(-1)){e.preventDefault();buttons[0].focus();}}});
+$('#replay-intro').addEventListener('click',()=>{clearTimeout(enterTimer);clearTimeout(closeTimer);prepareIntro();});
 function translate(){document.documentElement.lang=language;$$('[data-si][data-en]').forEach(el=>el.textContent=el.dataset[language]);$('#lang-si').classList.toggle('active',language==='si');$('#lang-en').classList.toggle('active',language==='en');$('#lang-si').setAttribute('aria-pressed',language==='si');$('#lang-en').setAttribute('aria-pressed',language==='en');updateAmount();renderSummary();renderAvailability();}
 $('#lang-si').addEventListener('click',()=>{language='si';localStorage.setItem('harithayu-language',language);translate();});$('#lang-en').addEventListener('click',()=>{language='en';localStorage.setItem('harithayu-language',language);translate();});
 function amount(){return Number($('#custom-amount').value);}

@@ -21,7 +21,7 @@ npm run build
 
 ## What works
 
-- First-visit seedling grow introduction, skip/replay, reduced-motion support.
+- First-visit cinematic mangrove introduction: photorealistic tree cutout, staged root/trunk/canopy growth, water reflections and ripples, skip/replay and reduced-motion support. Animation lasts about six seconds after a touch; skip works during growth.
 - Sinhala and English content, language preference, responsive mobile layout.
 - Accurate-purpose symbolic Sri Lanka map with a Mannar project marker; up to 500 contribution seedlings.
 - LKR 100 / 500 / 1,000 presets and custom contributions.
@@ -69,6 +69,7 @@ The planting date, exact Mannar location, ecological partner, permissions and mo
 
 - Map coastline: public-domain Natural Earth 1:10m geometry from [datasets/geo-countries](https://github.com/datasets/geo-countries). The Sri Lanka feature is saved in `public/assets/sri-lanka.geojson`. `node scripts/update-map.mjs` regenerates both the SVG coastline and the matching seedling mask. Projection preserves local geographic proportions; the Mannar town marker indicates the project region, not a confirmed planting site.
 - Project logo: supplied by the user, copied without changes to `public/assets/harithayu-logo.png`.
+- Intro tree: generated using the built-in ImageGen tool and optimized as a transparent WebP at `public/assets/mangrove-intro.webp`. Prompt: one complete photorealistic young Rhizophora mangrove, glossy green canopy, natural bark and exposed stilt roots, warm side lighting, isolated on transparency, no ground/water/text. This is a visual illustration, not footage of the project's planting site.
 - Mangrove context photograph: [Roar Media · The Roots of the Sea](https://archive.roar.media/english/life/environment-wildlife/the-roots-of-the-sea-protecting-the-mangroves-of-our-islands-coasts); attribution appears in the site footer. It is not presented as project photography. Confirm image reuse permission or replace it with club-owned imagery before public release.
 - Mangrove background: [UNEP](https://www.unep.org/news-and-stories/story/bringing-back-sri-lankas-mangroves-science-and-community-spirit); [Sri Lanka Ministry of Environment restoration guidelines](https://www.env.gov.lk/web/index.php/en/campaigns/222-introduction-of-national-strategic-action-plan-for-conservation-and-sustainable-utilization-of-mangrove-ecosystems-in-sri-lanka-and-national-guideline-for-the-restoration-of-mangrove-ecosystems-of-sri-lanka).
 - Typography: Google Fonts DM Sans and Noto Sans Sinhala. Local system fallbacks work without a connection; fonts make external requests when available.

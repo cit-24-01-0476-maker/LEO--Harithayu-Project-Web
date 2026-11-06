@@ -8,20 +8,24 @@
   <link rel="icon" href="/assets/seedling.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Sinhala:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css"><script type="module" src="/app.js"></script>
+  <link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/intro.css"><script type="module" src="/app.js"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content / අන්තර්ගතයට යන්න</a>
-<div class="intro" id="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+<div class="intro mangrove-intro" id="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+  <canvas class="mangrove-scene" id="mangrove-scene" aria-hidden="true"></canvas>
+  <div class="intro-vignette" aria-hidden="true"></div>
   <span class="intro-overline">LEO CLUB OF SLTC PRESENTS</span>
-  <button class="intro-seed" id="enter-site" aria-label="පැළයක් වවා ඇතුළු වන්න / Grow a seedling and enter">
-    <svg class="intro-tree" viewBox="0 0 200 230" aria-hidden="true"><ellipse cx="100" cy="202" rx="70" ry="7" fill="#c9ddca"/><g class="roots" fill="none" stroke="#9b8056" stroke-width="3"><path d="M100 156 Q75 192 45 203 M100 160 Q91 188 82 204 M100 157 Q113 187 132 203 M100 160 Q131 188 155 203"/></g><path class="trunk" d="M100 174 Q90 119 105 76" fill="none" stroke="#789b58" stroke-width="7" stroke-linecap="round"/><g class="leaves"><path d="M101 119 Q42 120 45 69 Q95 64 101 119" fill="#8ca96b"/><path d="M101 103 Q105 50 156 51 Q159 101 101 103" fill="#b6ce85"/><path d="M103 81 Q75 48 101 23 Q132 49 103 81" fill="#5b8550"/></g></svg>
-    <span class="touch-ring">↗</span>
+  <button class="intro-seed" id="enter-site" aria-label="ස්පර්ශ කර කඩොලාන ගස වවන්න / Touch to grow a mangrove">
+    <span class="intro-touch" aria-hidden="true"><span class="intro-touch-ring">↗</span> TOUCH TO GROW</span>
   </button>
-  <h1 id="intro-title">හරිතායු</h1>
-  <p>පුංචි ස්පර්ශයකින්, හරිත හෙටක්.<br><span>Touch the seedling. Let something beautiful grow.</span></p>
-  <button class="intro-enter" id="enter-text">පැළයක් වවා ඇතුළු වන්න <span>→</span></button>
-  <button class="intro-skip" id="skip-intro">Skip introduction</button>
+  <div class="intro-copy">
+    <p class="intro-phase" id="intro-phase" role="status" aria-live="polite">එක් ස්පර්ශයකින්, ජීවිතයට ඇරඹුමක්.</p>
+    <h1 id="intro-title">හරිතායු</h1>
+    <p class="intro-subtitle">පුංචි පැළයක්. හෙටට හුස්මක්.<span>Watch a little beginning become something extraordinary.</span></p>
+    <div class="intro-actions"><button class="intro-enter" id="enter-text">කඩොලාන ගස වවා ඇතුළු වන්න <span>→</span></button><button class="intro-skip" id="skip-intro">Skip intro</button></div>
+    <div class="intro-growth-track" aria-hidden="true"><span></span></div>
+  </div>
 </div>
 <header class="site-header">
   <a class="brand" href="#" aria-label="Harithayu home"><img src="/assets/harithayu-logo.png" alt="හරිතායු" width="108" height="72"><span class="brand-divider"></span><span class="club-mark">LEO CLUB<br><b>OF SLTC</b></span></a>
