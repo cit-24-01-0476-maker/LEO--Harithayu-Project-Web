@@ -14,7 +14,7 @@ function json(res,status,data) { res.writeHead(status,{'Content-Type':'applicati
 async function body(req) { if(req.body!==undefined){const value=typeof req.body==='string'?req.body:JSON.stringify(req.body);if(Buffer.byteLength(value)>8192)throw new Error('Request too large');return JSON.parse(value);}let data=''; for await (const chunk of req) { data+=chunk; if(Buffer.byteLength(data)>8192) throw new Error('Request too large'); } return JSON.parse(data || '{}'); }
 async function rate(req,key,max) {return store.allowRate(`${key}:${req.headers['x-vercel-forwarded-for'] || req.socket.remoteAddress}`,max,Date.now());}
 async function admin(req) { const sid=req.headers.cookie?.split(';').map(x=>x.trim()).find(x=>x.startsWith('harithayu_admin='))?.slice(16); return Boolean(sid && store && await store.sessionValid(sid,Date.now())); }
-const mime={'.mp4':'video/mp4','.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.ico':'image/x-icon'};
+const mime={'.mp3':'audio/mpeg','.mp4':'video/mp4','.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.ico':'image/x-icon'};
 return async(req,res)=>{
   res.setHeader('X-Content-Type-Options','nosniff');
   res.setHeader('X-Frame-Options','DENY');

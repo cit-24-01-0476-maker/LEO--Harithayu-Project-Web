@@ -1,4 +1,4 @@
-import { createSoundscape } from './soundscape.js';
+import { createSoundscape } from './lagoon-audio.js';
 import { islandPolygons } from './sri-lanka-map.js';
 import { createMangroveIntro } from './mangrove-video.js';
 
@@ -32,7 +32,7 @@ function finishIntro(immediate=false){
   sessionStorage.setItem(introVisitKey,'1');
 }
 function enter(skip=false){if(intro.hidden)return;if(skip){soundscape.start('page');finishIntro(true);return;}if(intro.classList.contains('growing'))return;soundscape.start('intro');intro.classList.add('growing');$('#enter-site').disabled=true;$('#enter-text').disabled=true;$('#skip-intro').focus({preventScroll:true});introAnimation?.start(()=>{enterTimer=setTimeout(()=>finishIntro(),reduced?0:550);});}
-if(sessionStorage.getItem(introVisitKey))intro.hidden=true;else prepareIntro();
+if(sessionStorage.getItem(introVisitKey)){intro.hidden=true;soundscape.page();}else prepareIntro();
 $('#enter-site').addEventListener('click',()=>enter());$('#enter-text').addEventListener('click',()=>enter());$('#skip-intro').addEventListener('click',()=>enter(true));
 intro.addEventListener('keydown',e=>{if(e.key==='Escape'){enter(true);return;}if(e.key==='Tab'){const buttons=[...intro.querySelectorAll('button'),$('#sound-toggle')].filter(b=>!b.disabled);if(e.shiftKey && document.activeElement===buttons[0]){e.preventDefault();buttons.at(-1).focus();}else if(!e.shiftKey && document.activeElement===buttons.at(-1)){e.preventDefault();buttons[0].focus();}}});
 $('#replay-intro').addEventListener('click',()=>{clearTimeout(enterTimer);clearTimeout(closeTimer);prepareIntro();});
