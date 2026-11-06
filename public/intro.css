@@ -57,3 +57,20 @@ html[lang=en] .mangrove-intro h1{font-size:clamp(42px,4vw,62px);font-weight:400;
 .intro-vignette{background:linear-gradient(0deg,rgba(3,19,15,.90) 0%,rgba(3,19,15,.55) 19%,transparent 49%),linear-gradient(180deg,rgba(3,19,15,.30),transparent 18%)}
 .mangrove-intro .intro-seed{inset:0;width:100%;height:68%}
 @media(max-width:650px){.mangrove-intro .intro-film{inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;filter:none}.intro-copy{bottom:6vh}.intro-vignette{background:linear-gradient(0deg,rgba(3,19,15,.94),rgba(3,19,15,.62) 25%,transparent 62%)}.mangrove-intro .intro-seed{inset:0;width:100%;height:65%}}
+
+/* The final film frame lifts away as the real landing page arrives beneath it. */
+.mangrove-intro{clip-path:inset(0 0 0 0);will-change:clip-path,opacity}
+.mangrove-intro.leaving{clip-path:inset(0 0 100% 0);opacity:0;filter:none;transition:clip-path 1.45s cubic-bezier(.76,0,.24,1),opacity 1.4s ease}
+.mangrove-intro.leaving .intro-copy{opacity:0;transform:translateY(-18px);transition:opacity .35s ease,transform .5s ease}
+body.page-arriving .site-header{animation:arrival-header 1s .5s both cubic-bezier(.2,.75,.25,1)}
+body.page-arriving main{animation:arrival-page 1.7s both cubic-bezier(.2,.75,.25,1)}
+body.page-arriving .hero-content>.eyebrow{animation:arrival-item .9s .45s both}
+body.page-arriving .hero h1>span{display:inline-block;animation:arrival-item 1s .58s both cubic-bezier(.2,.75,.25,1)}
+body.page-arriving .hero h1>span.accent{animation-delay:.76s}
+body.page-arriving .hero-content>p{animation:arrival-item 1s .9s both}
+body.page-arriving .hero-buttons{animation:arrival-item 1s 1.05s both}
+body.page-arriving .hero-note{animation:arrival-item 1s 1.2s both}
+@keyframes arrival-page{from{transform:translateY(45px)}to{transform:translateY(0)}}
+@keyframes arrival-header{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes arrival-item{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.mangrove-intro.leaving{clip-path:none;transition:none}body.page-arriving main,body.page-arriving .site-header,body.page-arriving .hero-content>*{animation:none!important}}
