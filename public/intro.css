@@ -87,3 +87,4 @@ body.page-arriving .hero-note{animation:arrival-item 1s 1.2s both}
 @keyframes brand-emerge{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:650px){.mangrove-intro .intro-copy{top:50%;bottom:auto;left:18px;right:18px}.intro-brand-logo{width:150px;height:100px}html[lang=en] .mangrove-intro h1{font-size:44px}.mangrove-intro .intro-phase{max-width:290px;line-height:1.8}.intro-vignette{background:radial-gradient(ellipse at center,rgba(3,19,15,.55),rgba(3,19,15,.12) 75%)}}
 @media(prefers-reduced-motion:reduce){.intro-brand-logo,.mangrove-intro h1{animation:none!important}}
+.mangrove-intro.leaving .intro-copy{transform:translateY(calc(-50% - 18px))}
