@@ -50,3 +50,10 @@ html[lang=en] .mangrove-intro h1{font-size:clamp(42px,4vw,62px);font-weight:400;
 @media(max-width:650px){.mangrove-intro{background-size:auto 100%!important}.mangrove-intro .intro-film{top:11%;height:52%;object-position:center;object-fit:contain;background:#0b241b66}.intro-vignette{background:linear-gradient(0deg,#061b17 0%,#061b17ed 31%,#061b1720 65%),linear-gradient(180deg,#061b17ad,transparent 25%)}.intro-copy{bottom:8vh}.mangrove-intro .intro-overline{top:6vh}.mangrove-intro .intro-phase{font-size:9px}.mangrove-intro .intro-subtitle>span:first-child{font-size:11px}.intro-actions{margin-top:24px}.mangrove-intro .intro-seed{top:12%;height:49%}}
 
 .mangrove-intro{background:#071d18!important}.mangrove-intro::before{display:block;position:absolute;inset:-35px;width:auto;height:auto;border:0;border-radius:0;background:url('/assets/mangrove-intro-poster.jpg') center/cover;filter:blur(30px) brightness(.45);opacity:.55;z-index:0;pointer-events:none}.mangrove-intro .intro-film{z-index:0}
+
+/* Full-bleed original-quality film: no blurred duplicate background. */
+.mangrove-intro::before{display:none!important}
+.mangrove-intro .intro-film{inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:none;background:#071d18}
+.intro-vignette{background:linear-gradient(0deg,rgba(3,19,15,.90) 0%,rgba(3,19,15,.55) 19%,transparent 49%),linear-gradient(180deg,rgba(3,19,15,.30),transparent 18%)}
+.mangrove-intro .intro-seed{inset:0;width:100%;height:68%}
+@media(max-width:650px){.mangrove-intro .intro-film{inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;filter:none}.intro-copy{bottom:6vh}.intro-vignette{background:linear-gradient(0deg,rgba(3,19,15,.94),rgba(3,19,15,.62) 25%,transparent 62%)}.mangrove-intro .intro-seed{inset:0;width:100%;height:65%}}
