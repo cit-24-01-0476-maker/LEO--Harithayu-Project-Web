@@ -1,7 +1,7 @@
 import { islandPolygons } from './sri-lanka-map.js';
 import { createMangroveIntro } from './mangrove-intro.js';
 
-let language=localStorage.getItem('harithayu-language')==='en'?'en':'si';
+let language=localStorage.getItem('harithayu-language')==='si'?'si':'en';
 let config={enabled:false,price:100,target:500},summary={amount:0,seedlings:0,contributions:0,donors:[]},summaryLoaded=false;
 let toastTimer,pendingTimer;
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
