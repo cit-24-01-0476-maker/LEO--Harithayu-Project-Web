@@ -13,7 +13,7 @@ const intro=$('#intro');
 const soundscape=createSoundscape();
 const introVisitKey='harithayu-film-v1';
 let enterTimer,closeTimer,revealTimer,introAnimation;
-const introPhases=[['මුල් බැසගනී. බලාපොරොත්තු වැඩෙයි.','Roots take hold. Hope begins.'],['මුලින් කඳක්. ඉන්පසු හරිත හෙටක්.','A living trunk. A greener tomorrow.'],['අතු විහිදෙයි. ජීවිතයට ඉඩ සැදෙයි.','Branches unfold. Life finds a home.'],['පුංචි පැළයක්. හෙටට හුස්මක්.','A little seedling. A living tomorrow.']];
+const introPhases=[['මුල් බැසගනී. බලාපොරොත්තු වැඩෙයි.','Roots take hold. Hope begins.'],['මුලින් කඳක්. ඉන්පසු හරිත හෙටක්.','A living trunk. A greener tomorrow.'],['අතු විහිදෙයි. ජීවිතයට ඉඩ සැදෙයි.','Branches unfold. Life finds a home.'],['අපේ හරිත ගමන මෙතැනින් ඇරඹෙයි.','Your greener tomorrow starts here.']];
 function introInert(value){$$('header.site-header,main#main,body>footer').forEach(el=>el.inert=value);}
 function prepareIntro(){soundscape.intro();clearTimeout(revealTimer);document.body.classList.remove('page-arriving');intro.hidden=false;intro.classList.remove('growing','leaving');$('#enter-site').disabled=false;$('#enter-text').disabled=false;$('#intro-phase').textContent=t('එක් ස්පර්ශයකින්, ජීවිතයට ඇරඹුමක්.','One touch. A new beginning.');document.body.classList.add('intro-open');introInert(true);if(!introAnimation)introAnimation=createMangroveIntro($('#mangrove-scene'),{reducedMotion:reduced,onStage:phase=>{$('#intro-phase').textContent=phase===-2?t('වීඩියෝව පූරණය කළ නොහැක. Skip භාවිත කරන්න.','Film unavailable. You can skip to the website.'):phase<0?t('අපේ හරිත කතාව ඇරඹෙයි…','Every coastline has a story.'):t(...introPhases[phase]);}});introAnimation.reset();$('#enter-site').focus({preventScroll:true});}
 function finishIntro(immediate=false){
