@@ -106,3 +106,16 @@ body.page-arriving .hero-note{animation:arrival-item 1s 1.2s both}
 @keyframes logo-current{0%,100%{transform:translateX(-3px);opacity:.94}50%{transform:translateX(4px);opacity:1}}
 @media(max-width:650px){.intro-brand-logo{width:90vw;height:auto;max-height:43svh}.mangrove-intro .intro-copy{left:12px;right:12px;gap:9px}html[lang=en] .mangrove-intro h1{font-size:36px}}
 @media(prefers-reduced-motion:reduce){.logo-leaf-sway,.logo-water-flow{animation:none!important;filter:none!important}}
+
+/* Floating foreground emblem, with independent sunlight and water depth. */
+.intro-brand-logo{transform-origin:50% 60%;transform-style:preserve-3d;filter:drop-shadow(0 20px 16px rgba(0,0,0,.65)) drop-shadow(0 1px 1px rgba(225,245,195,.30));animation:logo-float-depth 7s ease-in-out infinite;will-change:transform}
+.logo-leaf-sway{animation:logo-breeze-living 4.8s ease-in-out infinite}
+.logo-water-flow{animation:logo-current-living 5.7s ease-in-out infinite}
+.logo-sun-drift{transform-origin:1325px 450px;animation:logo-sunlight 8s ease-in-out infinite}
+.mangrove-intro .intro-film{filter:blur(2.5px) brightness(.66) saturate(.88);transform:scale(1.025);animation:video-soft-focus 9s ease-in-out infinite}
+@keyframes logo-float-depth{0%,100%{transform:perspective(1000px) translateY(3px) rotateX(2deg) rotateY(-3deg)}50%{transform:perspective(1000px) translateY(-9px) rotateX(-1deg) rotateY(3deg)}}
+@keyframes logo-breeze-living{0%,100%{transform:rotate(-.9deg) skewX(-.35deg)}50%{transform:rotate(1.2deg) skewX(.5deg)}}
+@keyframes logo-current-living{0%,100%{transform:translate(-5px,1px);opacity:.94}50%{transform:translate(6px,-1px);opacity:1}}
+@keyframes logo-sunlight{0%,100%{transform:translate(-4px,1px);filter:brightness(1)}50%{transform:translate(7px,-2px);filter:brightness(1.10)}}
+@keyframes video-soft-focus{0%,100%{filter:blur(2px) brightness(.66) saturate(.88)}50%{filter:blur(3px) brightness(.62) saturate(.88)}}
+@media(prefers-reduced-motion:reduce){.intro-brand-logo,.logo-sun-drift,.mangrove-intro .intro-film{animation:none!important;transform:none!important}.mangrove-intro .intro-film{filter:blur(2px) brightness(.66)}}
