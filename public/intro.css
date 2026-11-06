@@ -88,3 +88,11 @@ body.page-arriving .hero-note{animation:arrival-item 1s 1.2s both}
 @media(max-width:650px){.mangrove-intro .intro-copy{top:50%;bottom:auto;left:18px;right:18px}.intro-brand-logo{width:150px;height:100px}html[lang=en] .mangrove-intro h1{font-size:44px}.mangrove-intro .intro-phase{max-width:290px;line-height:1.8}.intro-vignette{background:radial-gradient(ellipse at center,rgba(3,19,15,.55),rgba(3,19,15,.12) 75%)}}
 @media(prefers-reduced-motion:reduce){.intro-brand-logo,.mangrove-intro h1{animation:none!important}}
 .mangrove-intro.leaving .intro-copy{transform:translateY(calc(-50% - 18px))}
+
+/* Clean, borderless logo and restrained title hierarchy. */
+.intro-brand-logo{width:210px;height:140px;background:none!important;border:0!important;outline:0!important;box-shadow:none!important;filter:drop-shadow(0 3px 8px rgba(0,0,0,.32))}
+.mangrove-intro .intro-copy{gap:12px}.mangrove-intro h1{font-weight:400;letter-spacing:1px;text-shadow:0 2px 18px rgba(0,0,0,.38)}
+.mangrove-intro .intro-phase{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);margin:0;padding:0}
+.mangrove-intro .intro-subtitle{color:#e0e9d3}.mangrove-intro .intro-subtitle>span:first-child{color:#e0e9d3;letter-spacing:.7px}
+.mangrove-intro .intro-actions{margin-top:13px}.mangrove-intro .intro-skip{color:#cedac4;text-decoration:none;border-bottom:1px solid #b7c7a16b;padding-bottom:5px}
+@media(max-width:650px){.intro-brand-logo{width:185px;height:123px}.mangrove-intro .intro-copy{gap:10px}html[lang=en] .mangrove-intro h1{font-size:48px}.mangrove-intro .intro-subtitle>span:first-child{font-size:11px;letter-spacing:.3px}}
