@@ -32,3 +32,21 @@
 @media(prefers-reduced-motion:reduce){.mangrove-intro,.intro-touch-ring,.intro-growth-track>span{animation:none!important;transition:none!important}}
 
 .mangrove-intro .intro-seed:focus-visible{outline:none}.mangrove-intro .intro-enter:focus-visible,.mangrove-intro .intro-skip:focus-visible{outline:2px solid #d1e1a7;outline-offset:5px}html[lang=en] .mangrove-intro h1{font-family:Georgia,serif;font-size:52px;letter-spacing:1px}.mangrove-intro .intro-subtitle>span:first-child{font-size:12px;color:#b3c6b2}.mangrove-intro .intro-enter span:first-child{margin-left:0}
+
+/* Film edition: let the image breathe, and keep copy away from the tree. */
+.mangrove-intro{background:#071d18 url('/assets/mangrove-intro-poster.jpg') center/cover no-repeat!important}
+.mangrove-intro .intro-film{object-fit:contain;object-position:center 35%;height:80%;top:0;filter:saturate(.88)}
+.intro-vignette{background:linear-gradient(0deg,#061b17 0%,#061b17f0 19%,#061b1740 43%,transparent 65%),linear-gradient(180deg,#04171085,transparent 22%)}
+.mangrove-intro .intro-seed{top:8%;height:58%;border-radius:0}
+.mangrove-intro .intro-touch{display:none}
+.intro-copy{bottom:4vh}.mangrove-intro .intro-phase{font-family:'DM Sans','Noto Sans Sinhala',sans-serif;letter-spacing:.8px;color:#c8d7b5}
+html[lang=en] .mangrove-intro h1{font-size:clamp(42px,4vw,62px);font-weight:400;letter-spacing:2px;line-height:1.3}
+.mangrove-intro .intro-subtitle>span:last-child{display:none}
+.mangrove-intro .intro-enter{min-width:195px;padding:15px 25px;background:#d9e4bc;border-radius:2px}
+.mangrove-intro.growing .intro-growth-track>span{animation:none}
+.mangrove-intro.growing .intro-enter{visibility:hidden}
+.mangrove-intro.growing .intro-actions{margin-top:8px}
+.mangrove-intro.leaving{filter:none;transition:opacity 1s ease}
+@media(max-width:650px){.mangrove-intro{background-size:auto 100%!important}.mangrove-intro .intro-film{top:11%;height:52%;object-position:center;object-fit:contain;background:#0b241b66}.intro-vignette{background:linear-gradient(0deg,#061b17 0%,#061b17ed 31%,#061b1720 65%),linear-gradient(180deg,#061b17ad,transparent 25%)}.intro-copy{bottom:8vh}.mangrove-intro .intro-overline{top:6vh}.mangrove-intro .intro-phase{font-size:9px}.mangrove-intro .intro-subtitle>span:first-child{font-size:11px}.intro-actions{margin-top:24px}.mangrove-intro .intro-seed{top:12%;height:49%}}
+
+.mangrove-intro{background:#071d18!important}.mangrove-intro::before{display:block;position:absolute;inset:-35px;width:auto;height:auto;border:0;border-radius:0;background:url('/assets/mangrove-intro-poster.jpg') center/cover;filter:blur(30px) brightness(.45);opacity:.55;z-index:0;pointer-events:none}.mangrove-intro .intro-film{z-index:0}

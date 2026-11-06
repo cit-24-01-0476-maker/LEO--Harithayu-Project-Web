@@ -21,7 +21,8 @@ npm run build
 
 ## What works
 
-- First-visit cinematic mangrove introduction: photorealistic tree cutout, staged root/trunk/canopy growth, water reflections and ripples, skip/replay and reduced-motion support. Animation lasts about six seconds after a touch; skip works during growth.
+- First-visit introduction now plays the user-supplied 10-second AI mangrove film (`public/assets/mangrove-intro.mp4`), optimized to H.264 MP4 with a first-frame poster. Playback is muted, starts on a user gesture, supports Skip/replay, pauses on exit, and respects reduced-motion preferences. Mobile preserves the entire frame.
+- Earlier cinematic mangrove introduction: photorealistic tree cutout, staged root/trunk/canopy growth, water reflections and ripples, skip/replay and reduced-motion support. Animation lasts about six seconds after a touch; skip works during growth.
 - Sinhala and English content, language preference, responsive mobile layout.
 - Accurate-purpose symbolic Sri Lanka map with a Mannar project marker; up to 500 contribution seedlings.
 - LKR 100 / 500 / 1,000 presets and custom contributions.
