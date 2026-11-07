@@ -31,7 +31,7 @@ export function createStore(path) {
       return row.count<=max;
     },
     insert(d) { db.exec('BEGIN');try {db.prepare('INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at) VALUES (?,?,?,?,?,?,?,?)').run(d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName ? 1 : 0,d.createdAt);if(d.receipt)db.prepare('INSERT INTO donation_receipts (donation_id,phone,mime,data) VALUES (?,?,?,?)').run(d.id,d.receipt.phone,d.receipt.mime,d.receipt.data);db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;} },
-    receipt(id) {return db.prepare('SELECT mime,data FROM donation_receipts WHERE donation_id=?').get(id);},
+    receipt(id) {return db.prepare('SELECT phone,mime,data FROM donation_receipts WHERE donation_id=?').get(id);},
     find(id) { return db.prepare('SELECT * FROM donations WHERE id=?').get(id); },
     confirm(id, status) { return db.prepare("UPDATE donations SET status=?, confirmed_at=? WHERE id=? AND status='pending'").run(status,status==='confirmed' ? new Date().toISOString() : null,id).changes; },
     pending() { return db.prepare("SELECT d.id,name,email,amount,reference,status,created_at,r.phone,CASE WHEN r.donation_id IS NULL THEN 0 ELSE 1 END has_slip FROM donations d LEFT JOIN donation_receipts r ON r.donation_id=d.id ORDER BY created_at DESC LIMIT 200").all(); },

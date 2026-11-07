@@ -1,3 +1,4 @@
+import { createGoogleBridge } from './google-bridge.mjs';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -6,6 +7,8 @@ import { randomBytes, timingSafeEqual } from 'node:crypto';
 const root=resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export function createHandler({store,env=process.env}) {
 const port=Number(env.PORT || 3000);
+const googleBridge=createGoogleBridge(env);
+async function syncStoredDonation(id){const d=await store.find(id);if(!d)return false;const receipt=await store.receipt(d.id);await googleBridge({id:d.id,name:d.name,email:d.email,amount:d.amount,reference:d.reference,publicName:d.public_name===1,createdAt:d.created_at,status:d.status,receipt:receipt||null});return true;}
 const origin=env.PUBLIC_ORIGIN || (env.VERCEL_PROJECT_PRODUCTION_URL?`https://${env.VERCEL_PROJECT_PRODUCTION_URL}`:`http://localhost:${port}`);
 const bank={ name:env.BANK_NAME || '', accountName:env.BANK_ACCOUNT_NAME || '', accountNumber:env.BANK_ACCOUNT_NUMBER || '', branch:env.BANK_BRANCH || '' };
 const enabled=Boolean(store) && env.DONATIONS_ENABLED==='true' && Object.values(bank).every(Boolean) && Boolean(env.CONTACT_EMAIL);
@@ -43,7 +46,8 @@ return async(req,res)=>{
       }
       const donation={id:randomBytes(12).toString('hex'),token:randomBytes(24).toString('hex'),name,email,amount:d.amount,reference,publicName:d.publicName===true,createdAt:new Date().toISOString(),receipt};
       try {await store.insert(donation);} catch(e) {if(e.message.includes('UNIQUE')) return json(res,409,{error:'This transfer reference was already submitted. Please contact the club if you need help.'}); throw e;}
-      return json(res,201,{id:donation.id,token:donation.token,status:'pending'});
+      let sheetSync='not-configured';if(googleBridge){try{await googleBridge(donation);sheetSync='synced';}catch{sheetSync='pending';console.error('Google donation sync needs an admin retry.');}}
+      return json(res,201,{id:donation.id,token:donation.token,status:'pending',sheetSync});
     }
     if(path.startsWith('/api/donations/') && req.method==='GET') {
       const d=store?await store.find(path.split('/').pop()):null;
@@ -67,8 +71,13 @@ return async(req,res)=>{
         if(!slip)return json(res,404,{error:'Slip not found.'});
         res.writeHead(200,{'Content-Type':slip.mime,'Content-Disposition':'inline','Cache-Control':'no-store'});return res.end(Buffer.from(slip.data,'base64'));
       }
+      if(path==='/api/admin/google-sync' && req.method==='POST') {
+        if(!googleBridge)return json(res,503,{error:'Google sync is not configured.'});
+        const input=await body(req);if(!await syncStoredDonation(input.id))return json(res,404,{error:'Contribution not found.'});
+        return json(res,200,{ok:true});
+      }
       if(path==='/api/admin/donations' && req.method==='GET') return json(res,200,{donations:await store.pending()});
-      if(path==='/api/admin/review' && req.method==='POST') { const d=await body(req); if(!['confirmed','rejected'].includes(d.status)) return json(res,400,{error:'Invalid review.'}); const changed=await store.confirm(d.id,d.status); return json(res,changed?200:409,{ok:Boolean(changed),error:changed?undefined:'Already reviewed or not found.'}); }
+      if(path==='/api/admin/review' && req.method==='POST') { const d=await body(req); if(!['confirmed','rejected'].includes(d.status)) return json(res,400,{error:'Invalid review.'}); const changed=await store.confirm(d.id,d.status); if(changed&&googleBridge){try{await syncStoredDonation(d.id);}catch{console.error('Google review sync needs an admin retry.');}} return json(res,changed?200:409,{ok:Boolean(changed),error:changed?undefined:'Already reviewed or not found.'}); }
       return json(res,404,{error:'Not found.'});
     }
     if(path.startsWith('/api/')) return json(res,404,{error:'Not found.'});

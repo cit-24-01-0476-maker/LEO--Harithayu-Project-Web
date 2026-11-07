@@ -22,7 +22,7 @@ export async function createTursoStore(env,fetcher) {
   await sql("CREATE TABLE IF NOT EXISTS donation_receipts (donation_id TEXT PRIMARY KEY REFERENCES donations(id), phone TEXT NOT NULL, mime TEXT NOT NULL, data TEXT NOT NULL)");
   return {
     async insert(d) {if(d.receipt){await sql("INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at) VALUES (?,?,?,?,?,?,?,?)",[d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName?1:0,d.createdAt]);try{await sql('INSERT INTO donation_receipts (donation_id,phone,mime,data) VALUES (?,?,?,?)',[d.id,d.receipt.phone,d.receipt.mime,d.receipt.data]);}catch(e){await sql("DELETE FROM donations WHERE id=? AND status='pending'",[d.id]);throw e;}return;}return sql('INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at) VALUES (?,?,?,?,?,?,?,?)',[d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName?1:0,d.createdAt]);},
-    async receipt(id) {return (await sql('SELECT mime,data FROM donation_receipts WHERE donation_id=?',[id])).rows[0];},
+    async receipt(id) {return (await sql('SELECT phone,mime,data FROM donation_receipts WHERE donation_id=?',[id])).rows[0];},
     async find(id) {return (await sql('SELECT * FROM donations WHERE id=?',[id])).rows[0];},
     async confirm(id,status) {return (await sql("UPDATE donations SET status=?,confirmed_at=? WHERE id=? AND status='pending'",[status,status==='confirmed'?new Date().toISOString():null,id])).changes;},
     async pending() {return (await sql('SELECT d.id,name,email,amount,reference,status,created_at,r.phone,CASE WHEN r.donation_id IS NULL THEN 0 ELSE 1 END has_slip FROM donations d LEFT JOIN donation_receipts r ON r.donation_id=d.id ORDER BY created_at DESC LIMIT 200')).rows;},
