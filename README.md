@@ -84,3 +84,6 @@ Current scroll water effect: a 3.2-second filtered, normalized excerpt of Swale.
 
 ## Bank slip contributions
 The donation form accepts name, phone, optional email, amount, transfer reference and a JPEG/PNG slip up to 1 MB. Slips are stored privately in donation_receipts; only authenticated admins can retrieve them. A submission is pending until the club matches it against bank records. Confirmation updates public totals, map and donor-tree leaves, respecting the donor name consent. Production requires a persistent Turso database, configured club bank details, CONTACT_EMAIL and a strong ADMIN_PASSWORD. Keep DONATIONS_ENABLED=false until these are ready. Apply server/schema.sql when provisioning the database; the receipt table is also created during Turso initialization.
+
+
+Province boundaries: geoBoundaries LKA ADM1 (2017), https://www.geoboundaries.org/api/current/gbOpen/LKA/ADM1/, ODbL 1.0, derived display paths in public/sri-lanka-provinces.js; original simplified source in public/assets/sri-lanka-provinces.geojson. Rebuild with node scripts/update-provinces.mjs. The donor-tree graphic is decorative campaign artwork, not a photograph of a project planting site.
