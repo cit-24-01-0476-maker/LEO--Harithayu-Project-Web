@@ -81,3 +81,11 @@ $('#contribution-close').addEventListener('click',()=>{closeContributionForm();$
 $('#clear-demo-leaves').addEventListener('click',()=>{demoLeaves.length=0;renderSummary();$('#payment-status').hidden=true;});
 
 matchMedia('(max-width:650px)').addEventListener('change',renderGivingTree);
+
+// Freeze canopy effects outside the viewport and respect reduced-motion preferences.
+const livingTrees=[...document.querySelectorAll('.living-mangrove')];
+const treeMotionPreference=matchMedia('(prefers-reduced-motion: reduce)');
+const treeVisibility=new Map();
+function updateLivingTrees(){for(const tree of livingTrees){const rest=treeMotionPreference.matches||document.hidden||treeVisibility.get(tree)===false;tree.classList.toggle('is-resting',rest);if(rest)tree.pauseAnimations();else tree.unpauseAnimations();}}
+const treeObserver=new IntersectionObserver(entries=>{for(const entry of entries)treeVisibility.set(entry.target,entry.isIntersecting);updateLivingTrees();},{rootMargin:'100px'});
+livingTrees.forEach(tree=>treeObserver.observe(tree));treeMotionPreference.addEventListener('change',updateLivingTrees);document.addEventListener('visibilitychange',updateLivingTrees);updateLivingTrees();
