@@ -119,3 +119,10 @@ body.page-arriving .hero-note{animation:arrival-item 1s 1.2s both}
 @keyframes logo-sunlight{0%,100%{transform:translate(-4px,1px);filter:brightness(1)}50%{transform:translate(7px,-2px);filter:brightness(1.10)}}
 @keyframes video-soft-focus{0%,100%{filter:blur(2px) brightness(.66) saturate(.88)}50%{filter:blur(3px) brightness(.62) saturate(.88)}}
 @media(prefers-reduced-motion:reduce){.intro-brand-logo,.logo-sun-drift,.mangrove-intro .intro-film{animation:none!important;transform:none!important}.mangrove-intro .intro-film{filter:blur(2px) brightness(.66)}}
+
+/* A deliberate gesture starts the film and audible recording together. */
+.mangrove-intro:not(.growing) .intro-film{visibility:hidden}
+.mangrove-intro:not(.growing){background:#071d18 url(/assets/mangrove-intro-poster.jpg) center/cover no-repeat!important}
+.intro-audio-hint{order:5;color:#cedac4;font:11px/1.8 "DM Sans",sans-serif;margin:5px 0 0;text-align:center}
+.intro-audio-hint span{display:block;font-size:10px}
+.mangrove-intro.growing .intro-audio-hint{display:none}
