@@ -1,11 +1,12 @@
 import { createGoogleBridge } from './google-bridge.mjs';
+import { createPrivateProofs,MAX_PROOF_BYTES } from './private-proofs.mjs';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)), '..');
-export function createHandler({store,env=process.env}) {
+export function createHandler({store,env=process.env,proofs=createPrivateProofs(env)}) {
 const port=Number(env.PORT || 3000);
 const googleBridge=createGoogleBridge(env);
 async function syncStoredDonation(id){const d=await store.find(id);if(!d)return false;const receipt=await store.receipt(d.id);await googleBridge({id:d.id,name:d.name,email:d.email,amount:d.amount,reference:d.reference,publicName:d.public_name===1,createdAt:d.created_at,status:d.status,receipt:receipt||null});return true;}
@@ -22,11 +23,25 @@ return async(req,res)=>{
   res.setHeader('X-Content-Type-Options','nosniff');
   res.setHeader('X-Frame-Options','DENY');
   res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
-  res.setHeader('Content-Security-Policy',"default-src 'self'; img-src 'self' data:; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; media-src 'self' https:; frame-src https://www.youtube-nocookie.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none'");
+  res.setHeader('Content-Security-Policy',"default-src 'self'; img-src 'self' data:; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self' https://blob.vercel-storage.com https://*.blob.vercel-storage.com; media-src 'self' https:; frame-src https://www.youtube-nocookie.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none'");
   try {
     const url=new URL(req.url,origin), path=url.pathname;
+    if(path==='/api/slip-upload'&&req.method==='POST'){
+      if(!enabled||!proofs)return json(res,503,{error:'Private uploads are not available.'});
+      const input=await body(req);
+      if(input.type!=='blob.upload-completed'){
+        if(req.headers.origin!==origin)return json(res,403,{error:'Request origin is not allowed.'});
+        if(!await rate(req,'upload',4))return json(res,429,{error:'Too many uploads. Please try again later.'});
+      }
+      try{return json(res,200,await proofs.handle(req,input));}catch{return json(res,400,{error:'Upload permission could not be verified.'});}
+    }
     if(['POST','PUT','DELETE'].includes(req.method) && req.headers.origin!==origin) return json(res,403,{error:'Request origin is not allowed.'});
-    if(path==='/api/config' && req.method==='GET') return json(res,200,{enabled,bank:enabled?bank:null,contactEmail:env.CONTACT_EMAIL || '',contactPhone:env.CONTACT_PHONE || '',videoUrl:/^https:\/\//.test(env.PROJECT_VIDEO_URL || '')?env.PROJECT_VIDEO_URL:null,price:100,target:500});
+    if(path==='/api/config' && req.method==='GET') return json(res,200,{enabled,bank:enabled?bank:null,maxSlipBytes:proofs?MAX_PROOF_BYTES:1048576,contactEmail:env.CONTACT_EMAIL || '',contactPhone:env.CONTACT_PHONE || '',videoUrl:/^https:\/\//.test(env.PROJECT_VIDEO_URL || '')?env.PROJECT_VIDEO_URL:null,price:100,target:500});
+    if(path==='/api/slip-upload-ticket'&&req.method==='POST'){
+      if(!enabled||!proofs)return json(res,503,{error:'Private uploads are not available.'});
+      if(!await rate(req,'upload-ticket',4))return json(res,429,{error:'Too many uploads. Please try again later.'});
+      const input=await body(req);try{return json(res,200,proofs.ticket(input.mime,input.size));}catch(e){return json(res,400,{error:e.message});}
+    }
     if(path==='/api/summary' && req.method==='GET') return json(res,200,store?await store.summary():{amount:0,seedlings:0,contributions:0,target:500,donors:[],preview:true});
     if(['/api/donations','/api/slip-donations'].includes(path) && req.method==='POST') {
       if(!enabled) return json(res,503,{error:'Contributions have not opened yet. Please try the clearly marked preview.'});
@@ -37,12 +52,17 @@ return async(req,res)=>{
       let receipt=null;
       if(path==='/api/slip-donations') {
         const phone=String(d.phone||'').trim();
+        if(d.receiptBlob){
+          if(!proofs||!(/^[+0-9 ()-]{9,25}$/).test(phone))return json(res,400,{error:'Enter a valid phone number.'});
+          try{receipt=await proofs.verify(d.receiptBlob,phone);}catch(e){return json(res,400,{error:e.message});}
+        }else{
         const match=/^data:image\/(png|jpeg);base64,([A-Za-z0-9+/]+={0,2})$/.exec(d.slip||'');
         if(!/^[+0-9 ()-]{9,25}$/.test(phone)||!match)return json(res,400,{error:'Enter a valid phone number and upload a JPEG or PNG bank slip.'});
         const bytes=Buffer.from(match[2],'base64');
         const valid=match[1]==='png'?bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])):bytes[0]===255&&bytes[1]===216&&bytes[2]===255;
         if(!valid||bytes.length>1048576||bytes.length<20)return json(res,400,{error:'Upload a valid JPEG or PNG slip, up to 1 MB.'});
         receipt={phone,mime:`image/${match[1]}`,data:match[2]};
+        }
       }
       const donation={id:randomBytes(12).toString('hex'),token:randomBytes(24).toString('hex'),name,email,amount:d.amount,reference,publicName:d.publicName===true,createdAt:new Date().toISOString(),receipt};
       try {await store.insert(donation);} catch(e) {if(e.message.includes('UNIQUE')) return json(res,409,{error:'This transfer reference was already submitted. Please contact the club if you need help.'}); throw e;}
@@ -69,6 +89,7 @@ return async(req,res)=>{
       if(path.startsWith('/api/admin/slips/') && req.method==='GET') {
         const slip=await store.receipt(path.split('/').pop());
         if(!slip)return json(res,404,{error:'Slip not found.'});
+        if(slip.data.startsWith('blob:')){if(!proofs||!await proofs.stream(slip.data.slice(5),res))return json(res,404,{error:'Slip not found.'});return;}
         res.writeHead(200,{'Content-Type':slip.mime,'Content-Disposition':'inline','Cache-Control':'no-store'});return res.end(Buffer.from(slip.data,'base64'));
       }
       if(path==='/api/admin/google-sync' && req.method==='POST') {
@@ -86,6 +107,6 @@ return async(req,res)=>{
     if(!file.startsWith(resolve(root,'public')+'\\') && !file.startsWith(resolve(root,'public')+'/')) return json(res,403,{error:'Forbidden'});
     try { const bytes=await readFile(file); res.writeHead(200,{'Content-Type':mime[extname(file)] || 'application/octet-stream','Cache-Control':'no-cache'}); res.end(req.method==='HEAD'?undefined:bytes); }
     catch {json(res,404,{error:'Not found.'});}
-  } catch(e) { if(e instanceof SyntaxError || e.message==='Request too large') return json(res,400,{error:'Invalid request.'}); console.error('Request failed:',e.message); json(res,500,{error:'Something went wrong. Please try again.'}); }
+  } catch(e) { if(res.headersSent){res.destroy();return;}if(e instanceof SyntaxError || e.message==='Request too large') return json(res,400,{error:'Invalid request.'}); console.error('Request failed:',e.message); json(res,500,{error:'Something went wrong. Please try again.'}); }
 };
 }

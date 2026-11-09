@@ -4,3 +4,9 @@ async function load(){try{const data=await api('/api/admin/donations');$('#admin
 $('#admin-login').addEventListener('submit',async e=>{e.preventDefault();try{await api('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:$('#admin-password').value})});$('#admin-password').value='';$('#admin-message').textContent='';await load();}catch(e){$('#admin-message').textContent=e.message;}});
 $('#review-cancel').addEventListener('click',()=>$('#review-dialog').close());$('#review-confirm').addEventListener('click',async()=>{const b=$('#review-confirm');b.disabled=true;try{await api('/api/admin/review',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(selection)});$('#review-dialog').close();$('#admin-message').textContent='Review saved. The public totals now reflect verified contributions.';await load();}catch(e){$('#admin-message').textContent=e.message;$('#review-dialog').close();}finally{b.disabled=false;}});$('#refresh-records').addEventListener('click',load);$('#admin-logout').addEventListener('click',async()=>{try{await api('/api/admin/logout',{method:'POST'});location.reload();}catch(e){$('#admin-message').textContent=e.message;}});
 fetch('/api/admin/donations').then(r=>{if(r.ok)load();});
+
+const requestedProof=new URLSearchParams(location.search).get('slip');
+if(/^[a-f0-9]{24}$/.test(requestedProof||'')){
+ const note=document.createElement('p');note.textContent='Sign in, then open the private proof attached to this submission. ';
+ const link=document.createElement('a');link.href='/api/admin/slips/'+requestedProof;link.target='_blank';link.rel='noopener';link.className='text-link';link.textContent='Open private proof';note.append(link);document.querySelector('main').prepend(note);
+}

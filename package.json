@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Harithayu — Leo Club of SLTC mangrove restoration",
+  "description": "Harithayu \u00e2\u20ac\u201d Leo Club of SLTC mangrove restoration",
   "engines": {
     "node": ">=24.0.0"
   },
@@ -11,9 +11,13 @@
     "dev": "node --env-file-if-exists=.env server/index.mjs",
     "start": "node --env-file-if-exists=.env server/index.mjs",
     "test": "node --test tests/*.test.mjs",
-    "build": "node scripts/check.mjs"
+    "build": "esbuild client/proof-upload.js --bundle --format=esm --platform=browser --target=es2022 --outfile=public/proof-upload.js && node scripts/check.mjs"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.2.0"
+    "@neondatabase/serverless": "^1.2.0",
+    "@vercel/blob": "2.4.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
   }
 }
