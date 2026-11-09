@@ -1,3 +1,4 @@
+import {ANALYTICS_SCHEMA,createAnalyticsStore} from './analytics-store.mjs';
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -23,7 +24,11 @@ export function createStore(path) {
   const columns=db.prepare('PRAGMA table_info(donations)').all().map(c=>c.name);
   if(!columns.includes('auto_accepted'))db.exec('ALTER TABLE donations ADD COLUMN auto_accepted INTEGER NOT NULL DEFAULT 0');
   if(!columns.includes('archived_at'))db.exec('ALTER TABLE donations ADD COLUMN archived_at TEXT');
+  if(!columns.includes('audit_json'))db.exec("ALTER TABLE donations ADD COLUMN audit_json TEXT NOT NULL DEFAULT '{}'");
+  db.exec(ANALYTICS_SCHEMA.join(';'));
+  const analytics=createAnalyticsStore(async(text,args)=>db.prepare(text).all(...args),async(statements)=>{db.exec('BEGIN');try{for(const [text,args] of statements)db.prepare(text).run(...args);db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;}});
   return {
+    ...analytics,
     db,
     archiveBefore(cutoff){const rows=db.prepare('SELECT * FROM donations WHERE archived_at IS NULL AND created_at<=?').all(cutoff);db.prepare('UPDATE donations SET archived_at=? WHERE archived_at IS NULL AND created_at<=?').run(cutoff,cutoff);return rows;},
     createSession(id,expires) {db.prepare('DELETE FROM admin_sessions WHERE expires<?').run(Date.now());db.prepare('INSERT INTO admin_sessions (id,expires) VALUES (?,?)').run(id,expires);},
@@ -34,7 +39,7 @@ export function createStore(path) {
       const row=db.prepare('INSERT INTO rate_limits (id,count,expires) VALUES (?,1,?) ON CONFLICT(id) DO UPDATE SET count=count+1 RETURNING count').get(id,now+600000);
       return row.count<=max;
     },
-    insert(d) { db.exec('BEGIN');try {db.prepare('INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at,status,auto_accepted,confirmed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)').run(d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName ? 1 : 0,d.createdAt,d.autoAccepted?'confirmed':'pending',d.autoAccepted?1:0,d.autoAccepted?d.createdAt:null);if(d.receipt)db.prepare('INSERT INTO donation_receipts (donation_id,phone,mime,data) VALUES (?,?,?,?)').run(d.id,d.receipt.phone,d.receipt.mime,d.receipt.data);db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;} },
+    insert(d) { db.exec('BEGIN');try {db.prepare('INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at,status,auto_accepted,confirmed_at,audit_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)').run(d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName ? 1 : 0,d.createdAt,d.autoAccepted?'confirmed':'pending',d.autoAccepted?1:0,d.autoAccepted?d.createdAt:null,JSON.stringify(d.requestDetails||{}));if(d.receipt)db.prepare('INSERT INTO donation_receipts (donation_id,phone,mime,data) VALUES (?,?,?,?)').run(d.id,d.receipt.phone,d.receipt.mime,d.receipt.data);db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;} },
     receipt(id) {return db.prepare('SELECT phone,mime,data FROM donation_receipts WHERE donation_id=?').get(id);},
     find(id) { return db.prepare('SELECT * FROM donations WHERE id=?').get(id); },
     confirm(id, status) { return db.prepare("UPDATE donations SET status=?, confirmed_at=? WHERE id=? AND status='pending' AND archived_at IS NULL").run(status,status==='confirmed' ? new Date().toISOString() : null,id).changes; },

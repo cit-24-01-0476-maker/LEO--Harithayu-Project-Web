@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Harithayu \u00e2\u20ac\u201d Leo Club of SLTC mangrove restoration",
+  "description": "Harithayu â€” Leo Club of SLTC mangrove restoration",
   "engines": {
     "node": ">=24.0.0"
   },
@@ -15,9 +15,13 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
-    "@vercel/blob": "2.4.0"
+    "@vercel/blob": "2.4.0",
+    "exceljs": "^4.4.0"
   },
   "devDependencies": {
     "esbuild": "^0.28.2"
+  },
+  "overrides": {
+    "uuid": "11.1.1"
   }
 }

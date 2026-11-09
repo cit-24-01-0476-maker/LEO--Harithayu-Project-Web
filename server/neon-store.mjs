@@ -1,3 +1,4 @@
+import {ANALYTICS_SCHEMA,createAnalyticsStore} from './analytics-store.mjs';
 import { neon } from '@neondatabase/serverless';
 
 // All values use query parameters. Slips and donor contact details stay server-side.
@@ -10,18 +11,22 @@ export async function createNeonStore(env, client) {
       public_name INTEGER NOT NULL DEFAULT 0 CHECK(public_name IN (0,1)),
       status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','confirmed','rejected')),
       created_at TEXT NOT NULL, confirmed_at TEXT)`),
-    sql.query('ALTER TABLE donations ADD COLUMN IF NOT EXISTS auto_accepted INTEGER NOT NULL DEFAULT 0, ADD COLUMN IF NOT EXISTS archived_at TEXT'),
+    sql.query("ALTER TABLE donations ADD COLUMN IF NOT EXISTS auto_accepted INTEGER NOT NULL DEFAULT 0, ADD COLUMN IF NOT EXISTS archived_at TEXT, ADD COLUMN IF NOT EXISTS audit_json TEXT NOT NULL DEFAULT '{}'"),
     sql.query(`CREATE TABLE IF NOT EXISTS donation_receipts (
       donation_id TEXT PRIMARY KEY REFERENCES donations(id) ON DELETE CASCADE,
       phone TEXT NOT NULL, mime TEXT NOT NULL, data TEXT NOT NULL)`),
     sql.query('CREATE TABLE IF NOT EXISTS admin_sessions (id TEXT PRIMARY KEY, expires BIGINT NOT NULL)'),
     sql.query('CREATE TABLE IF NOT EXISTS rate_limits (id TEXT PRIMARY KEY, count INTEGER NOT NULL, expires BIGINT NOT NULL)')
   ]);
+  const params=text=>{let i=0;return text.replace(/\?/g,()=>'$'+(++i));};
+  const analytics=createAnalyticsStore((text,args)=>sql.query(params(text),args),statements=>sql.transaction(statements.map(([text,args])=>sql.query(params(text),args))));
+  await sql.transaction(ANALYTICS_SCHEMA.map(text=>sql.query(text)));
   return {
+    ...analytics,
     async archiveBefore(cutoff){return sql.query('UPDATE donations SET archived_at=$1 WHERE archived_at IS NULL AND created_at<=$1 RETURNING *',[cutoff]);},
     async insert(d) {
       try {
-        const queries=[sql.query('INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at,status,auto_accepted,confirmed_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',[d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName?1:0,d.createdAt,d.autoAccepted?'confirmed':'pending',d.autoAccepted?1:0,d.autoAccepted?d.createdAt:null])];
+        const queries=[sql.query('INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at,status,auto_accepted,confirmed_at,audit_json) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)',[d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName?1:0,d.createdAt,d.autoAccepted?'confirmed':'pending',d.autoAccepted?1:0,d.autoAccepted?d.createdAt:null,JSON.stringify(d.requestDetails||{})])];
         if(d.receipt)queries.push(sql.query('INSERT INTO donation_receipts (donation_id,phone,mime,data) VALUES ($1,$2,$3,$4)',[d.id,d.receipt.phone,d.receipt.mime,d.receipt.data]));
         await sql.transaction(queries);
       } catch(error) {if(error.code==='23505')throw Error('UNIQUE transfer reference');throw error;}

@@ -1,3 +1,4 @@
+import {ANALYTICS_SCHEMA,createAnalyticsStore} from './analytics-store.mjs';
 // Turso's public SQL-over-HTTP protocol. No database driver is required.
 // https://github.com/tursodatabase/turso/blob/main/serverless/PROTOCOL.md
 export function createSqlClient(env,fetcher=fetch) {
@@ -23,9 +24,13 @@ export async function createTursoStore(env,fetcher) {
   const columns=(await sql('PRAGMA table_info(donations)')).rows.map(c=>c.name);
   if(!columns.includes('auto_accepted'))await sql('ALTER TABLE donations ADD COLUMN auto_accepted INTEGER NOT NULL DEFAULT 0');
   if(!columns.includes('archived_at'))await sql('ALTER TABLE donations ADD COLUMN archived_at TEXT');
+  if(!columns.includes('audit_json'))await sql("ALTER TABLE donations ADD COLUMN audit_json TEXT NOT NULL DEFAULT '{}'");
+  for(const text of ANALYTICS_SCHEMA)await sql(text);
+  const analytics=createAnalyticsStore(async(text,args)=>(await sql(text,args)).rows,async statements=>{for(const [text,args] of statements)await sql(text,args);});
   return {
+    ...analytics,
     async archiveBefore(cutoff){const rows=(await sql('SELECT * FROM donations WHERE archived_at IS NULL AND created_at<=?',[cutoff])).rows;await sql('UPDATE donations SET archived_at=? WHERE archived_at IS NULL AND created_at<=?',[cutoff,cutoff]);return rows;},
-    async insert(d) {if(d.receipt){await sql("INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at,status,auto_accepted,confirmed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",[d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName?1:0,d.createdAt,d.autoAccepted?'confirmed':'pending',d.autoAccepted?1:0,d.autoAccepted?d.createdAt:null]);try{await sql('INSERT INTO donation_receipts (donation_id,phone,mime,data) VALUES (?,?,?,?)',[d.id,d.receipt.phone,d.receipt.mime,d.receipt.data]);}catch(e){await sql("DELETE FROM donations WHERE id=?",[d.id]);throw e;}return;}return sql('INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at,status,auto_accepted,confirmed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)',[d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName?1:0,d.createdAt,d.autoAccepted?'confirmed':'pending',d.autoAccepted?1:0,d.autoAccepted?d.createdAt:null]);},
+    async insert(d) {if(d.receipt){await sql("INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at,status,auto_accepted,confirmed_at,audit_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",[d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName?1:0,d.createdAt,d.autoAccepted?'confirmed':'pending',d.autoAccepted?1:0,d.autoAccepted?d.createdAt:null,JSON.stringify(d.requestDetails||{})]);try{await sql('INSERT INTO donation_receipts (donation_id,phone,mime,data) VALUES (?,?,?,?)',[d.id,d.receipt.phone,d.receipt.mime,d.receipt.data]);}catch(e){await sql("DELETE FROM donations WHERE id=?",[d.id]);throw e;}return;}return sql('INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at,status,auto_accepted,confirmed_at,audit_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',[d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName?1:0,d.createdAt,d.autoAccepted?'confirmed':'pending',d.autoAccepted?1:0,d.autoAccepted?d.createdAt:null,JSON.stringify(d.requestDetails||{})]);},
     async receipt(id) {return (await sql('SELECT phone,mime,data FROM donation_receipts WHERE donation_id=?',[id])).rows[0];},
     async find(id) {return (await sql('SELECT * FROM donations WHERE id=?',[id])).rows[0];},
     async confirm(id,status) {return (await sql("UPDATE donations SET status=?,confirmed_at=? WHERE id=? AND status='pending' AND archived_at IS NULL",[status,status==='confirmed'?new Date().toISOString():null,id])).changes;},

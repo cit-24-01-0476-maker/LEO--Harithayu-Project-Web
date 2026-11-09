@@ -1,5 +1,7 @@
 import { createGoogleBridge } from './google-bridge.mjs';
 import { createPrivateProofs,MAX_PROOF_BYTES } from './private-proofs.mjs';
+import { requestDetails } from './request-details.mjs';
+import { presentDonation } from './admin-report.mjs';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -37,6 +39,14 @@ return async(req,res)=>{
       try{return json(res,200,await proofs.handle(req,input));}catch{return json(res,400,{error:'Upload permission could not be verified.'});}
     }
     if(['POST','PUT','DELETE'].includes(req.method) && req.headers.origin!==origin) return json(res,403,{error:'Request origin is not allowed.'});
+    if(path==='/api/visit'&&req.method==='POST'){
+      if(!store?.recordVisit)return json(res,503,{error:'Visitor statistics unavailable.'});
+      if(!await rate(req,'visitor',300))return json(res,429,{error:'Please try later.'});
+      const input=await body(req),uuid=/^[a-f0-9-]{36}$/i;
+      if(!uuid.test(input.visitorId||'')||!uuid.test(input.pageId||'')||input.path!=='/')return json(res,400,{error:'Invalid visitor session.'});
+      await store.recordVisit({...requestDetails(req,env,input.privacyOptOut===true),visitorId:input.visitorId,pageId:input.pageId,path:'/',now:Date.now()});
+      return json(res,200,await store.trafficSummary());
+    }
     if(path==='/api/config' && req.method==='GET') return json(res,200,{enabled,autoAccept,bank:enabled?bank:null,maxSlipBytes:proofs?MAX_PROOF_BYTES:1048576,contactEmail:env.CONTACT_EMAIL || '',contactPhone:env.CONTACT_PHONE || '',videoUrl:/^https:\/\//.test(env.PROJECT_VIDEO_URL || '')?env.PROJECT_VIDEO_URL:null,price:100,target:500});
     if(path==='/api/slip-upload-ticket'&&req.method==='POST'){
       if(!enabled||!proofs)return json(res,503,{error:'Private uploads are not available.'});
@@ -68,6 +78,7 @@ return async(req,res)=>{
       if(autoAccept&&!receipt)return json(res,400,{error:'Upload your proof before submitting a donation.'});
       const donation={id:randomBytes(12).toString('hex'),token:randomBytes(24).toString('hex'),name,email,amount:d.amount,reference,publicName:d.publicName===true,createdAt:new Date().toISOString(),receipt};
       donation.autoAccepted=autoAccept;donation.status=autoAccept?'confirmed':'pending';
+      donation.requestDetails=requestDetails(req,env);
       try {await store.insert(donation);} catch(e) {if(e.message.includes('UNIQUE')) return json(res,409,{error:'This transfer reference was already submitted. Please contact the club if you need help.'}); throw e;}
       let sheetSync='not-configured';if(googleBridge){try{await googleBridge(donation);sheetSync='synced';}catch{sheetSync='pending';console.error('Google donation sync needs an admin retry.');}}
       return json(res,201,{id:donation.id,token:donation.token,status:autoAccept?'accepted':'pending',sheetSync});
@@ -101,6 +112,15 @@ return async(req,res)=>{
         return json(res,200,{ok:true});
       }
       if(path==='/api/admin/donations' && req.method==='GET') return json(res,200,{donations:await store.pending()});
+      if(path==='/api/admin/dashboard'&&req.method==='GET'){
+        const [donations,traffic,metrics]=await Promise.all([store.adminDetails(),store.trafficDetails(),store.trafficSummary()]);
+        return json(res,200,{donations:donations.map(presentDonation),...traffic,metrics});
+      }
+      if(path==='/api/admin/export.xlsx'&&req.method==='GET'){
+        const [donations,traffic]=await Promise.all([store.adminDetails(),store.trafficDetails()]);
+        const bytes=await (await import('./admin-report.mjs')).createAdminReport(donations,traffic,origin);
+        res.writeHead(200,{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Content-Disposition':'attachment; filename="Harithayu-admin-report.xlsx"','Cache-Control':'private, no-store'});return res.end(Buffer.from(bytes));
+      }
       if(path==='/api/admin/review' && req.method==='POST') { const d=await body(req); if(!['confirmed','rejected'].includes(d.status)) return json(res,400,{error:'Invalid review.'}); const changed=await store.confirm(d.id,d.status); if(changed&&googleBridge){try{await syncStoredDonation(d.id);}catch{console.error('Google review sync needs an admin retry.');}} return json(res,changed?200:409,{ok:Boolean(changed),error:changed?undefined:'Already reviewed or not found.'}); }
       return json(res,404,{error:'Not found.'});
     }
