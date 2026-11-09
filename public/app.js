@@ -6,7 +6,7 @@ import { provinces } from './sri-lanka-provinces.js';
 import { seedlingOwners } from './donation-map.js';
 import { createMangroveIntro } from './mangrove-video.js';
 
-let language=localStorage.getItem('harithayu-ui-language')==='si'?'si':'en';
+let language=localStorage.getItem('harithayu-ui-language')==='en'?'en':'si';
 let config={enabled:false,price:100,target:500},summary={amount:0,seedlings:0,contributions:0,donors:[]},summaryLoaded=false;
 let toastTimer,pendingTimer;
 const demoLeaves=[];

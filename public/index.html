@@ -1,12 +1,13 @@
 <!doctype html>
-<html lang="en">
+<html lang="si">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Harithayu — A little seedling. A living tomorrow. | Leo Club of SLTC</title>
+  <title>හරිතායු — පුංචි පැළයක්. හෙටට හුස්මක්. | Leo Club of SLTC</title>
   <meta name="description" content="Leo Club of SLTC සමඟ මන්නාරමේ කඩොලාන පැළ 500ක් වෙනුවෙන් එක්වෙමු. හරිතායු — a greener coast, one seedling at a time.">
   <meta name="theme-color" content="#133e32">
   <link rel="icon" href="/assets/seedling.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" href="/assets/UN-Derana.ttf" as="font" type="font/ttf" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Sinhala:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script>try{document.documentElement.dataset.theme=localStorage.getItem("harithayu-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}catch{document.documentElement.dataset.theme="light"}</script><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/intro.css"><link rel="stylesheet" href="/theme.css"><script type="module" src="/app.js"></script>
 <script type="module" src="/visitor-tracking.js"></script></head>
@@ -16,10 +17,10 @@
 <section id="welcome-screen" class="welcome-screen" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
   <div class="welcome-content">
     <p class="welcome-club">LEO CLUB OF SLTC PRESENTS</p>
-    <h1 id="welcome-title">Harithayu</h1>
-    <p class="welcome-tagline">A little seedling. A living tomorrow.</p>
-    <button id="welcome-enter" class="welcome-enter" type="button"><span>Enter Harithayu</span><span aria-hidden="true">→</span></button>
-    <p class="welcome-audio">Enter to begin with sound.<span lang="si">(හඬ සමඟ ඇරඹීමට පිවිසෙන්න.)</span></p>
+    <h1 id="welcome-title" data-si="හරිතායු" data-en="Harithayu">හරිතායු</h1>
+    <p class="welcome-tagline" data-si="පුංචි පැළයක්. හෙටට හුස්මක්." data-en="A little seedling. A living tomorrow.">පුංචි පැළයක්. හෙටට හුස්මක්.</p>
+    <button id="welcome-enter" class="welcome-enter" type="button"><span data-si="හරිතායු වෙත පිවිසෙන්න" data-en="Enter Harithayu">හරිතායු වෙත පිවිසෙන්න</span><span aria-hidden="true">→</span></button>
+    <p class="welcome-audio" data-si="හඬ සමඟ ඇරඹීමට පිවිසෙන්න." data-en="Enter to begin with sound.">හඬ සමඟ ඇරඹීමට පිවිසෙන්න.<span lang="en">(Enter to begin with sound.)</span></p>
   </div>
 </section>
 <div class="intro mangrove-intro" id="intro" hidden role="dialog" aria-modal="true" aria-labelledby="intro-title">
@@ -41,7 +42,7 @@
 <header class="site-header">
   <a class="brand" href="#" aria-label="Harithayu home"><svg class="brand-logo-transparent living-brand-logo" viewBox="0 0 1536 1024" role="img" aria-label="Harithayu project logo"><defs><filter id="brand1-logo-white-alpha" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 0 3"/><feComponentTransfer><feFuncA type="linear" slope="1.25" intercept="-0.16"/></feComponentTransfer></filter><clipPath id="brand1-logo-crown-clip"><path d="M0 0H760V420L620 470L430 480V540H0Z"/></clipPath><clipPath id="brand1-logo-water-clip"><path d="M0 790H850V800H1536V1024H0Z"/></clipPath><clipPath id="brand1-logo-sun-clip"><path d="M1200 290H1460V450H1536V525H1070V450H1200Z"/></clipPath><mask id="brand1-logo-still-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="1536" height="1024"><rect width="1536" height="1024" fill="white"/><path d="M0 0H760V420L620 470L430 480V540H0Z" fill="black"/><path d="M0 790H850V800H1536V1024H0Z" fill="black"/><path d="M1200 290H1460V450H1536V525H1070V450H1200Z" fill="black"/></mask><filter id="brand1-logo-water-motion" x="-8%" y="-15%" width="116%" height="130%"><feTurbulence type="fractalNoise" baseFrequency=".008 .035" numOctaves="1" seed="4" result="water-noise"><animate attributeName="baseFrequency" values=".008 .035;.011 .04;.008 .035" dur="8s" repeatCount="indefinite"/></feTurbulence><feDisplacementMap in="SourceGraphic" in2="water-noise" scale="10" xChannelSelector="R" yChannelSelector="G"/></filter></defs><g mask="url(#brand1-logo-still-mask)"><image href="/assets/harithayu-logo.png" width="1536" height="1024" filter="url(#brand1-logo-white-alpha)"/></g><g class="logo-leaf-sway"><g clip-path="url(#brand1-logo-crown-clip)"><image href="/assets/harithayu-logo.png" width="1536" height="1024" filter="url(#brand1-logo-white-alpha)"/></g></g><g class="logo-water-flow" filter="url(#brand1-logo-water-motion)"><g clip-path="url(#brand1-logo-water-clip)"><image href="/assets/harithayu-logo.png" width="1536" height="1024" filter="url(#brand1-logo-white-alpha)"/></g></g><g class="logo-sun-drift"><g clip-path="url(#brand1-logo-sun-clip)"><image href="/assets/harithayu-logo.png" width="1536" height="1024" filter="url(#brand1-logo-white-alpha)"/></g></g></svg><span class="brand-divider"></span><span class="club-mark">LEO CLUB<br><b>OF SLTC</b></span></a>
   <nav aria-label="Main navigation"><a href="#story" data-si="අපේ කතාව" data-en="Our story">Our story</a><a href="#impact" data-si="අපේ බලපෑම" data-en="Our impact">Our impact</a><a href="#community" data-si="අපේ දායකයන්" data-en="Our community">Our community</a></nav>
-  <div class="header-actions"><button type="button" id="theme-toggle" class="theme-toggle" aria-label="Switch to dark mode" aria-pressed="false">☾</button><button type="button" id="language-toggle" class="text-link" aria-label="Change website language" aria-pressed="false">සිංහල</button><a href="#donate" class="button small" data-si="දායක වෙන්න ↗" data-en="Give a seedling ↗">Give a seedling ↗</a></div>
+  <div class="header-actions"><button type="button" id="theme-toggle" class="theme-toggle" aria-label="Switch to dark mode" aria-pressed="false">☾</button><button type="button" id="language-toggle" class="text-link" aria-label="Change website language" aria-pressed="true">English</button><a href="#donate" class="button small" data-si="දායක වෙන්න ↗" data-en="Give a seedling ↗">Give a seedling ↗</a></div>
 </header>
 <main id="main">
   <section class="hero">
