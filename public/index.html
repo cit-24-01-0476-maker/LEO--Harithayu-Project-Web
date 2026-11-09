@@ -8,7 +8,7 @@
   <link rel="icon" href="/assets/seedling.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Sinhala:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/intro.css"><script type="module" src="/app.js"></script>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem("harithayu-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}catch{document.documentElement.dataset.theme="light"}</script><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/intro.css"><link rel="stylesheet" href="/theme.css"><script type="module" src="/app.js"></script>
 <script type="module" src="/visitor-tracking.js"></script></head>
 <body>
 <button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="false" aria-label="Enable ambient sound">♫ Sound on</button>
@@ -41,11 +41,11 @@
 <header class="site-header">
   <a class="brand" href="#" aria-label="Harithayu home"><img src="/assets/harithayu-logo.png" alt="හරිතායු" width="108" height="72"><span class="brand-divider"></span><span class="club-mark">LEO CLUB<br><b>OF SLTC</b></span></a>
   <nav aria-label="Main navigation"><a href="#story" data-si="අපේ කතාව" data-en="Our story">Our story</a><a href="#impact" data-si="අපේ බලපෑම" data-en="Our impact">Our impact</a><a href="#community" data-si="අපේ දායකයන්" data-en="Our community">Our community</a></nav>
-  <div class="header-actions"><button type="button" id="language-toggle" class="text-link" aria-label="Change website language" aria-pressed="false">සිංහල</button><a href="#donate" class="button small" data-si="දායක වෙන්න ↗" data-en="Give a seedling ↗">Give a seedling ↗</a></div>
+  <div class="header-actions"><button type="button" id="theme-toggle" class="theme-toggle" aria-label="Switch to dark mode" aria-pressed="false">☾</button><button type="button" id="language-toggle" class="text-link" aria-label="Change website language" aria-pressed="false">සිංහල</button><a href="#donate" class="button small" data-si="දායක වෙන්න ↗" data-en="Give a seedling ↗">Give a seedling ↗</a></div>
 </header>
 <main id="main">
   <section class="hero">
-    <video class="hero-image hero-video" id="hero-video" muted loop playsinline preload="none" poster="/assets/mangroves.jpg" aria-hidden="true"><source src="/assets/mangrove-hero-loop.mp4" type="video/mp4"></video>
+    <video class="hero-image hero-video" id="hero-video" muted loop playsinline preload="auto" aria-hidden="true"><source src="/assets/mangrove-hero-loop.mp4" type="video/mp4"></video>
     <div class="hero-shade"></div><div class="hero-content wrap">
       <div class="eyebrow light"><span class="tiny-leaf">❧</span> <span data-si="හෙට වෙනුවෙන් අද මුල් බසිමු" data-en="ROOTED IN TODAY. GROWING FOR TOMORROW.">ROOTED IN TODAY. GROWING FOR TOMORROW.</span></div>
       <h1><span data-si="පුංචි පැළයක්." data-en="A little seedling.">A little seedling.</span><br><span class="accent" data-si="හෙටට හුස්මක්." data-en="A living tomorrow.">A living tomorrow.</span></h1>

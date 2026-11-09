@@ -1,0 +1,23 @@
+/* Forest and warm ivory palettes; photographic assets retain their natural colours. */
+:root{color-scheme:light}.hero .hero-video{background:#09251c}
+.theme-toggle{display:grid;place-items:center;flex-shrink:0;width:38px;height:38px;border:1px solid var(--line);border-radius:50%;font-size:20px;color:var(--ink);background:transparent}
+.theme-toggle:hover{background:#8ba77120}
+html[data-theme=dark]{color-scheme:dark;--ink:#e0e9d6;--green:#335f46;--muted:#adbcaa;--cream:#101e18;--lime:#d0e497;--line:#354b3b}
+html[data-theme=dark] body{background:var(--cream);color:var(--ink)}
+html[data-theme=dark] .site-header{background:#11251b;border-color:var(--line)}
+html[data-theme=dark] :is(.mission-strip,.impact-section,.plan-section){background:#172a20}
+html[data-theme=dark] :is(.donation-card,.inline-contribution,dialog,.empty-state){background:#182b21;border-color:var(--line);color:var(--ink)}
+html[data-theme=dark] :is(.bank-details,.availability,.amount-option,.amount-input){background:#20382a;border-color:#40583e;color:var(--ink)}
+html[data-theme=dark] .amount-option.selected{background:#344b2d;border-color:#b3cf85}
+html[data-theme=dark] :is(form input:not([type=checkbox]),form textarea){background:#12231a;color:#e0e9d6;border-color:#496044}
+html[data-theme=dark] input::placeholder{color:#8a9d87}
+html[data-theme=dark] .contribution-layout .donation-card{background:transparent}
+html[data-theme=dark] .inline-contribution .amount-input #custom-amount{background:transparent;color:#e0e9d6}
+html[data-theme=dark] .giving-tree{background:radial-gradient(ellipse at 50% 60%,#31432b,#16271d 75%)}
+html[data-theme=dark] .tree-empty{background:#203527e8;color:#dce7d2}
+html[data-theme=dark] :is(.donation-ledger-row,.plan-notice,.footer-bottom,.contribution-nature){border-color:var(--line)}
+html[data-theme=dark] :is(.fine-print,.photo-credit,.source-note,.si-meaning,.verified-label){color:#a6b89e}
+html[data-theme=dark] :is(.receipt-leaf,.giving-leaf){color:#21412c}
+html[data-theme=dark] .brand-divider{background:#496044}
+@media(max-width:650px){.header-actions{gap:8px}.theme-toggle{width:32px;height:32px;font-size:18px}.header-actions .button{max-width:112px;padding:9px 8px}}
+

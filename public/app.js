@@ -164,3 +164,8 @@ if(heroVideo){
  document.addEventListener('visibilitychange',syncHero);motion.addEventListener('change',syncHero);
 }
 
+const themeButton=document.querySelector('#theme-toggle');
+function renderTheme(){const dark=document.documentElement.dataset.theme==='dark';themeButton.textContent=dark?'☀':'☾';themeButton.setAttribute('aria-pressed',String(dark));themeButton.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');themeButton.title=dark?'Light mode':'Dark mode';}
+themeButton.addEventListener('click',()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark';localStorage.setItem('harithayu-theme',document.documentElement.dataset.theme);renderTheme();});renderTheme();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',e=>{if(!localStorage.getItem('harithayu-theme')){document.documentElement.dataset.theme=e.matches?'dark':'light';renderTheme();}});
+
