@@ -28,7 +28,7 @@ export async function createTursoStore(env,fetcher) {
     async pending() {return (await sql('SELECT d.id,name,email,amount,reference,status,created_at,r.phone,CASE WHEN r.donation_id IS NULL THEN 0 ELSE 1 END has_slip FROM donations d LEFT JOIN donation_receipts r ON r.donation_id=d.id ORDER BY created_at DESC LIMIT 200')).rows;},
     async summary() {
       const totals=(await sql("SELECT COALESCE(SUM(amount),0) amount,COUNT(*) contributions FROM donations WHERE status='confirmed'")).rows[0];
-      const donors=(await sql("SELECT id,CASE WHEN public_name=1 THEN name ELSE 'Anonymous' END name,amount,confirmed_at FROM donations WHERE status='confirmed' ORDER BY confirmed_at DESC LIMIT 50")).rows;
+      const donors=(await sql("SELECT id,CASE WHEN public_name=1 THEN name ELSE 'Anonymous' END name,amount,confirmed_at FROM donations WHERE status='confirmed' ORDER BY confirmed_at DESC,id DESC")).rows;
       return {amount:totals.amount,contributions:totals.contributions,seedlings:Math.floor(totals.amount/100),target:500,donors};
     },
     async createSession(id,expires) {await sql('DELETE FROM admin_sessions WHERE expires<?',[Date.now()]);await sql('INSERT INTO admin_sessions (id,expires) VALUES (?,?)',[id,expires]);},
@@ -42,3 +42,4 @@ export async function createTursoStore(env,fetcher) {
     close() {}
   };
 }
+

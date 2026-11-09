@@ -37,9 +37,10 @@ export function createStore(path) {
     pending() { return db.prepare("SELECT d.id,name,email,amount,reference,status,created_at,r.phone,CASE WHEN r.donation_id IS NULL THEN 0 ELSE 1 END has_slip FROM donations d LEFT JOIN donation_receipts r ON r.donation_id=d.id ORDER BY created_at DESC LIMIT 200").all(); },
     summary() {
       const totals=db.prepare("SELECT COALESCE(SUM(amount),0) amount, COUNT(*) contributions FROM donations WHERE status='confirmed'").get();
-      const donors=db.prepare("SELECT id,CASE WHEN public_name=1 THEN name ELSE 'Anonymous' END name,amount,confirmed_at FROM donations WHERE status='confirmed' ORDER BY confirmed_at DESC LIMIT 50").all();
+      const donors=db.prepare("SELECT id,CASE WHEN public_name=1 THEN name ELSE 'Anonymous' END name,amount,confirmed_at FROM donations WHERE status='confirmed' ORDER BY confirmed_at DESC,id DESC").all();
       return { amount: totals.amount, contributions: totals.contributions, seedlings: Math.floor(totals.amount / 100), target: 500, donors };
     },
     close() { db.close(); }
   };
 }
+

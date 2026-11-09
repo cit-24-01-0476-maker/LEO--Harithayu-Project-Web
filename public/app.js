@@ -1,6 +1,7 @@
 import { createSoundscape } from './lagoon-audio.js';
 import { islandPolygons } from './sri-lanka-map.js';
 import { provinces } from './sri-lanka-provinces.js';
+import { seedlingOwners } from './donation-map.js';
 import { createMangroveIntro } from './mangrove-video.js';
 
 let language=localStorage.getItem('harithayu-ui-language')==='si'?'si':'en';
@@ -50,8 +51,37 @@ const points=[];for(let y=55;y<468;y+=9)for(let x=108;x<390;x+=9)if(inside(x,y)&
 // Stable interleaving spreads new contributions over the symbolic island.
 points.sort((a,b)=>((a[0]*7919+a[1]*104729)%100003)-((b[0]*7919+b[1]*104729)%100003));
 function sprout(point,size=12){const el=document.createElementNS('http://www.w3.org/2000/svg','use');el.setAttribute('href','#sprout');el.setAttribute('x',point[0]-size/2);el.setAttribute('y',point[1]-size);el.setAttribute('width',size);el.setAttribute('height',size*1.17);return el;}
-function renderSummary(){if(summaryLoaded){$('#total-raised').textContent=money(summary.amount);$('#seed-count').textContent=summary.seedlings.toLocaleString('en-LK');$('#donor-count').textContent=summary.contributions.toLocaleString('en-LK');const percent=Math.min(100,summary.seedlings/500*100);$('#progress-percent').textContent=`${Math.floor(percent)}%`;$('#progress-fill').style.width=`${percent}%`;$('#progress').setAttribute('aria-valuenow',Math.min(500,summary.seedlings));}$('#map-seedlings').replaceChildren(...points.slice(0,Math.min(500,summary.seedlings)).map(p=>sprout(p)));renderGivingTree();renderDemoJourney();}
-async function refreshSummary(){try{const r=await fetch('/api/summary');if(!r.ok)throw Error();const previous=summary.seedlings;summary=await r.json();summaryLoaded=true;renderSummary();$('#data-status').textContent='';if(summary.seedlings>previous && previous>0)notifyMap(t('තවත් දායකත්වයක් සමඟ අපේ සිතියම වැඩෙනවා!','Our map is growing with another verified contribution!'));}catch{$('#data-status').textContent=t('දායකත්ව දත්ත ලබාගත නොහැකි විය. නැවත උත්සාහ කරමින් පවතී.','Contribution data could not be loaded. Retrying shortly.');if(!summaryLoaded){$('#total-raised').textContent='—';$('#seed-count').textContent='—';$('#donor-count').textContent='—';}}}
+function renderSummary(){if(summaryLoaded){$('#total-raised').textContent=money(summary.amount);$('#seed-count').textContent=summary.seedlings.toLocaleString('en-LK');$('#donor-count').textContent=summary.contributions.toLocaleString('en-LK');const percent=Math.min(100,summary.seedlings/500*100);$('#progress-percent').textContent=`${Math.floor(percent)}%`;$('#progress-fill').style.width=`${percent}%`;$('#progress').setAttribute('aria-valuenow',Math.min(500,summary.seedlings));}renderVerifiedMap();renderDonationLedger();renderGivingTree();renderDemoJourney();}
+
+function renderVerifiedMap(){
+  const host=$('#map-seedlings'),oldCount=host.children.length;
+  const owners=seedlingOwners(summary.donors,points.length);
+  host.replaceChildren(...points.slice(0,Math.min(points.length,summary.seedlings)).map((point,i)=>{
+    const plant=sprout(point),donor=owners[i];
+    if(donor){const title=document.createElementNS(plant.namespaceURI,'title');title.textContent=`${donor.name==='Anonymous'?t('නිර්නාමික','Anonymous'):donor.name} · ${money(donor.amount)}`;plant.append(title);plant.setAttribute('aria-label',title.textContent);plant.setAttribute('role','img');}
+    if(summaryLoaded&&oldCount>0&&i>=oldCount)plant.classList.add('new-sprout');
+    return plant;
+  }));
+}
+
+let visibleDonations=20;
+function renderDonationLedger(){
+  const list=$('#donation-ledger');if(!list)return;
+  $('#ledger-count').textContent=summaryLoaded?`${summary.contributions.toLocaleString('en-LK')} ${t('දායකත්ව','contributions')} · ${money(summary.amount)}`:'';
+  $('#ledger-empty').hidden=summary.donors.length>0;
+  $('#ledger-empty').textContent=t('තහවුරු කළ දායකත්ව මෙහි දිස්වේ.','Verified contributions will appear here.');
+  list.replaceChildren(...summary.donors.slice(0,visibleDonations).map(d=>{
+    const row=document.createElement('li');row.className='donation-ledger-row';row.dataset.donationId=d.id;
+    const icon=document.createElement('span');icon.className='ledger-leaf';icon.textContent='❧';icon.setAttribute('aria-hidden','true');
+    const name=document.createElement('strong');name.textContent=d.name==='Anonymous'?t('නිර්නාමික','Anonymous'):d.name;
+    const value=document.createElement('span');value.className='ledger-amount';value.textContent=money(d.amount);
+    const date=document.createElement('time');date.dateTime=d.confirmed_at;date.textContent=new Date(d.confirmed_at).toLocaleDateString(language==='si'?'si-LK':'en-LK',{year:'numeric',month:'short',day:'numeric'});
+    row.append(icon,name,value,date);return row;
+  }));
+  $('#more-donations').hidden=visibleDonations>=summary.donors.length;
+  $('#more-donations').textContent=t('තවත් දායකත්ව බලන්න ↓','Show more donations ↓');
+}
+async function refreshSummary(){try{const r=await fetch('/api/summary');if(!r.ok)throw Error();const previous=summary.seedlings;const next=await r.json();if(summaryLoaded&&JSON.stringify(next)===JSON.stringify(summary)){document.querySelector('#data-status').textContent='';return;}summary=next;summaryLoaded=true;renderSummary();$('#data-status').textContent='';if(summary.seedlings>previous && previous>0)notifyMap(t('තවත් දායකත්වයක් සමඟ අපේ සිතියම වැඩෙනවා!','Our map is growing with another verified contribution!'));}catch{$('#data-status').textContent=t('දායකත්ව දත්ත ලබාගත නොහැකි විය. නැවත උත්සාහ කරමින් පවතී.','Contribution data could not be loaded. Retrying shortly.');if(!summaryLoaded){$('#total-raised').textContent='—';$('#seed-count').textContent='—';$('#donor-count').textContent='—';}}}
 function renderAvailability(){if(!config.enabled){$('#availability p').textContent=t('Demo bank details සහ slip form එක බලන්න. මේවා සැබෑ ගිණුම් විස්තර නොවේ. මුදල් මාරු නොකරන්න.','Explore the demo bank details and slip form. These are not real account details. Do not transfer money.');$('#contribute span:first-child').textContent=t('Demo දායකත්ව form එක බලන්න','Explore the donation form');$('#payment-note').textContent=t('DEMO පමණයි · මුදල් හෝ slips භාර නොගනී','DEMO ONLY · No payments or slips accepted');}if(config.enabled){$('#availability p').textContent=t('බැංකු මාරුවකින් දායක වන්න. Club එකෙන් තහවුරු වූ පසු සිතියමේ ඔබේ පැළය වැඩෙනවා.','Contribute by bank transfer. Your seedling grows after the club verifies your transfer.');$('#contribute span:first-child').textContent=t('බැංකු විස්තර ලබාගන්න','Get bank transfer details');$('#payment-note').textContent=t('බැංකු මාරුව · Club එකෙන් පරීක්ෂා කර තහවුරු කෙරේ','Bank transfer · Manually verified by the club');}}
 function notifyMap(text){clearTimeout(toastTimer);$('#map-toast').textContent=text;$('#map-toast').hidden=false;toastTimer=setTimeout(()=>$('#map-toast').hidden=true,5000);}
 function preview(){const index=Math.min(summary.seedlings,points.length-1);const tree=sprout(points[index] || [232,300],36);tree.classList.add('new-sprout');$('#preview-sprout').replaceChildren(tree);$('.map-panel').scrollIntoView({behavior:reduced?'instant':'smooth',block:'center'});notifyMap(t('🌱 මෙන්න ඔබේ පුංචි පැළය! මෙය preview එකක් පමණයි.','🌱 Your little seedling! This is a preview only.'));setTimeout(()=>tree.remove(),9000);}
@@ -67,7 +97,10 @@ async function checkPending(){const record=pendingRecord();if(!record)return;con
 $('#transfer-form').addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget,submit=form.querySelector('[type=submit]');submit.disabled=true;$('#form-error').textContent='';const data=new FormData(form);try{const file=data.get('slip');if(!file?.size||file.size>1048576)throw Error(t('1 MB දක්වා JPEG හෝ PNG රිසිට්පතක් තෝරන්න.','Choose a JPEG or PNG bank slip up to 1 MB.'));if(!['image/jpeg','image/png'].includes(file.type))throw Error(t('JPEG හෝ PNG රිසිට්පතක් තෝරන්න.','Choose a JPEG or PNG slip.'));if(!config.enabled){const demoAmount=Number(data.get('amount'));if(!Number.isSafeInteger(demoAmount)||demoAmount<100||demoAmount>1000000)throw Error('Enter an amount between LKR 100 and LKR 1,000,000.');demoLeaves.unshift({name:String(data.get('name')).trim(),amount:demoAmount,demo:true,confirmed_at:new Date().toISOString()});if(demoLeaves.length>20)demoLeaves.pop();closeContributionForm();form.reset();updateAmount();renderSummary();$('.map-panel').scrollIntoView({behavior:reduced?'instant':'smooth',block:'center'});notifyMap(t('DEMO · ඔබේ දායකත්වයෙන් පැළයක් මතුවුණා!','DEMO · A little mangrove grows with your contribution!'));const box=$('#payment-status');box.hidden=false;box.textContent=t('Demo කොළය වැඩුණා! නම හා මුදල මේ browser tab එකේ පමණයි. රිසිට්පත upload හෝ save කළේ නැහැ. සැබෑ මුළු මුදල වෙනස් නොවේ.','Your demo leaf has grown! Name and amount are visible only in this tab. The slip was not uploaded or saved. Real donation totals are unchanged.');return;}const slip=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('Unable to read slip.'));reader.readAsDataURL(file);});const r=await fetch('/api/slip-donations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:data.get('name'),email:data.get('email'),phone:data.get('phone'),slip,reference:data.get('reference'),amount:Number(data.get('amount')),publicName:data.has('publicName'),consent:data.has('consent')})});const result=await r.json();if(!r.ok)throw Error(result.error || 'Please try again.');localStorage.setItem('harithayu-pending',JSON.stringify({id:result.id,token:result.token}));closeContributionForm();form.reset();await checkPending();$('#payment-status').scrollIntoView({behavior:'smooth'});if(!pendingTimer)pendingTimer=setInterval(checkPending,12000);}catch(err){$('#form-error').textContent=err.message;}finally{submit.disabled=false;}});
 $('#year').textContent=new Date().getFullYear();translate();
 fetch('/api/config').then(r=>{if(!r.ok)throw Error();return r.json();}).then(c=>{config=c;renderAvailability();$('#contribute').click();}).catch(()=>{$('#availability p').textContent=t('සම්බන්ධතාව පරීක්ෂා කළ නොහැකි නිසා දායකත්ව භාරගැනීම වසා ඇත. Preview එක භාවිත කළ හැකියි.','Contributions are closed because connection status could not be verified. The preview is available.');});
-refreshSummary();setInterval(()=>{if(!document.hidden)refreshSummary();},20000);if(pendingRecord()){checkPending();pendingTimer=setInterval(checkPending,12000);}
+refreshSummary();setInterval(()=>{if(!document.hidden)refreshSummary();},10000);if(pendingRecord()){checkPending();pendingTimer=setInterval(checkPending,12000);}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshSummary();});
+window.addEventListener('focus',()=>refreshSummary());
+$('#more-donations').addEventListener('click',()=>{visibleDonations+=20;renderDonationLedger();});
 
 $('#film-dialog').addEventListener('close',()=>soundscape.duck(false));
 
@@ -90,3 +123,4 @@ const treeVisibility=new Map();
 function updateLivingTrees(){for(const tree of livingTrees){const rest=treeMotionPreference.matches||document.hidden||treeVisibility.get(tree)===false;tree.classList.toggle('is-resting',rest);if(rest)tree.pauseAnimations();else tree.unpauseAnimations();}}
 const treeObserver=new IntersectionObserver(entries=>{for(const entry of entries)treeVisibility.set(entry.target,entry.isIntersecting);updateLivingTrees();},{rootMargin:'100px'});
 livingTrees.forEach(tree=>treeObserver.observe(tree));treeMotionPreference.addEventListener('change',updateLivingTrees);document.addEventListener('visibilitychange',updateLivingTrees);updateLivingTrees();
+

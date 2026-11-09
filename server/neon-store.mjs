@@ -31,7 +31,7 @@ export async function createNeonStore(env, client) {
     async summary() {
       const [totals,donors]=await sql.transaction([
         sql.query("SELECT COALESCE(SUM(amount),0)::integer amount,COUNT(*)::integer contributions FROM donations WHERE status='confirmed'"),
-        sql.query("SELECT id,CASE WHEN public_name=1 THEN name ELSE 'Anonymous' END name,amount,confirmed_at FROM donations WHERE status='confirmed' ORDER BY confirmed_at DESC LIMIT 50")
+        sql.query("SELECT id,CASE WHEN public_name=1 THEN name ELSE 'Anonymous' END name,amount,confirmed_at FROM donations WHERE status='confirmed' ORDER BY confirmed_at DESC,id DESC")
       ],{isolationLevel:'RepeatableRead',readOnly:true});
       return {...totals[0],seedlings:Math.floor(totals[0].amount/100),target:500,donors};
     },
@@ -47,3 +47,4 @@ export async function createNeonStore(env, client) {
     close() {}
   };
 }
+
