@@ -1,4 +1,5 @@
 import { createHandler } from '../server/service.mjs';
+import { createGoogleBridge } from '../server/google-bridge.mjs';
 let handler;
 export default async function vercelHandler(req,res) {
   try {
@@ -8,6 +9,12 @@ export default async function vercelHandler(req,res) {
         : process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN
         ? await (await import('../server/turso-store.mjs')).createTursoStore(process.env)
         : null;
+      const cutoff=process.env.ARCHIVE_DONATIONS_BEFORE;
+      if(store&&cutoff){
+        if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(cutoff))throw Error('Invalid archive cutoff');
+        const archived=await store.archiveBefore(cutoff),bridge=createGoogleBridge(process.env);
+        if(bridge)for(const d of archived){try{await bridge({id:d.id,name:d.name,email:d.email,amount:d.amount,reference:d.reference,publicName:d.public_name===1,createdAt:d.created_at,status:'rejected'});}catch{console.error('Archived donation Google status needs a retry.');}}
+      }
       handler=createHandler({store});
     }
     const route=new URL(req.url,'https://localhost').searchParams.get('route');

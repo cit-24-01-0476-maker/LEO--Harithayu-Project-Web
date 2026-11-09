@@ -20,8 +20,12 @@ export function createStore(path) {
   mime TEXT NOT NULL, data TEXT NOT NULL
 );
 `);
+  const columns=db.prepare('PRAGMA table_info(donations)').all().map(c=>c.name);
+  if(!columns.includes('auto_accepted'))db.exec('ALTER TABLE donations ADD COLUMN auto_accepted INTEGER NOT NULL DEFAULT 0');
+  if(!columns.includes('archived_at'))db.exec('ALTER TABLE donations ADD COLUMN archived_at TEXT');
   return {
     db,
+    archiveBefore(cutoff){const rows=db.prepare('SELECT * FROM donations WHERE archived_at IS NULL AND created_at<=?').all(cutoff);db.prepare('UPDATE donations SET archived_at=? WHERE archived_at IS NULL AND created_at<=?').run(cutoff,cutoff);return rows;},
     createSession(id,expires) {db.prepare('DELETE FROM admin_sessions WHERE expires<?').run(Date.now());db.prepare('INSERT INTO admin_sessions (id,expires) VALUES (?,?)').run(id,expires);},
     sessionValid(id,now) {return Boolean(db.prepare('SELECT id FROM admin_sessions WHERE id=? AND expires>?').get(id,now));},
     deleteSession(id) {db.prepare('DELETE FROM admin_sessions WHERE id=?').run(id);},
@@ -30,14 +34,14 @@ export function createStore(path) {
       const row=db.prepare('INSERT INTO rate_limits (id,count,expires) VALUES (?,1,?) ON CONFLICT(id) DO UPDATE SET count=count+1 RETURNING count').get(id,now+600000);
       return row.count<=max;
     },
-    insert(d) { db.exec('BEGIN');try {db.prepare('INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at) VALUES (?,?,?,?,?,?,?,?)').run(d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName ? 1 : 0,d.createdAt);if(d.receipt)db.prepare('INSERT INTO donation_receipts (donation_id,phone,mime,data) VALUES (?,?,?,?)').run(d.id,d.receipt.phone,d.receipt.mime,d.receipt.data);db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;} },
+    insert(d) { db.exec('BEGIN');try {db.prepare('INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at,status,auto_accepted,confirmed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)').run(d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName ? 1 : 0,d.createdAt,d.autoAccepted?'confirmed':'pending',d.autoAccepted?1:0,d.autoAccepted?d.createdAt:null);if(d.receipt)db.prepare('INSERT INTO donation_receipts (donation_id,phone,mime,data) VALUES (?,?,?,?)').run(d.id,d.receipt.phone,d.receipt.mime,d.receipt.data);db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;} },
     receipt(id) {return db.prepare('SELECT phone,mime,data FROM donation_receipts WHERE donation_id=?').get(id);},
     find(id) { return db.prepare('SELECT * FROM donations WHERE id=?').get(id); },
-    confirm(id, status) { return db.prepare("UPDATE donations SET status=?, confirmed_at=? WHERE id=? AND status='pending'").run(status,status==='confirmed' ? new Date().toISOString() : null,id).changes; },
-    pending() { return db.prepare("SELECT d.id,name,email,amount,reference,status,created_at,r.phone,CASE WHEN r.donation_id IS NULL THEN 0 ELSE 1 END has_slip FROM donations d LEFT JOIN donation_receipts r ON r.donation_id=d.id ORDER BY created_at DESC LIMIT 200").all(); },
+    confirm(id, status) { return db.prepare("UPDATE donations SET status=?, confirmed_at=? WHERE id=? AND status='pending' AND archived_at IS NULL").run(status,status==='confirmed' ? new Date().toISOString() : null,id).changes; },
+    pending() { return db.prepare("SELECT d.id,name,email,amount,reference,status,created_at,r.phone,CASE WHEN r.donation_id IS NULL THEN 0 ELSE 1 END has_slip FROM donations d LEFT JOIN donation_receipts r ON r.donation_id=d.id WHERE d.archived_at IS NULL ORDER BY created_at DESC LIMIT 200").all(); },
     summary() {
-      const totals=db.prepare("SELECT COALESCE(SUM(amount),0) amount, COUNT(*) contributions FROM donations WHERE status='confirmed'").get();
-      const donors=db.prepare("SELECT id,CASE WHEN public_name=1 THEN name ELSE 'Anonymous' END name,amount,confirmed_at FROM donations WHERE status='confirmed' ORDER BY confirmed_at DESC,id DESC").all();
+      const totals=db.prepare("SELECT COALESCE(SUM(amount),0) amount, COUNT(*) contributions FROM donations WHERE status='confirmed' AND archived_at IS NULL").get();
+      const donors=db.prepare("SELECT id,CASE WHEN public_name=1 THEN name ELSE 'Anonymous' END name,amount,confirmed_at,auto_accepted FROM donations WHERE status='confirmed' AND archived_at IS NULL ORDER BY confirmed_at DESC,id DESC").all();
       return { amount: totals.amount, contributions: totals.contributions, seedlings: Math.floor(totals.amount / 100), target: 500, donors };
     },
     close() { db.close(); }

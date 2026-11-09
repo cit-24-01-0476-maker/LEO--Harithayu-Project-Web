@@ -10,6 +10,7 @@ export async function createNeonStore(env, client) {
       public_name INTEGER NOT NULL DEFAULT 0 CHECK(public_name IN (0,1)),
       status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','confirmed','rejected')),
       created_at TEXT NOT NULL, confirmed_at TEXT)`),
+    sql.query('ALTER TABLE donations ADD COLUMN IF NOT EXISTS auto_accepted INTEGER NOT NULL DEFAULT 0, ADD COLUMN IF NOT EXISTS archived_at TEXT'),
     sql.query(`CREATE TABLE IF NOT EXISTS donation_receipts (
       donation_id TEXT PRIMARY KEY REFERENCES donations(id) ON DELETE CASCADE,
       phone TEXT NOT NULL, mime TEXT NOT NULL, data TEXT NOT NULL)`),
@@ -17,21 +18,22 @@ export async function createNeonStore(env, client) {
     sql.query('CREATE TABLE IF NOT EXISTS rate_limits (id TEXT PRIMARY KEY, count INTEGER NOT NULL, expires BIGINT NOT NULL)')
   ]);
   return {
+    async archiveBefore(cutoff){return sql.query('UPDATE donations SET archived_at=$1 WHERE archived_at IS NULL AND created_at<=$1 RETURNING *',[cutoff]);},
     async insert(d) {
       try {
-        const queries=[sql.query('INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',[d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName?1:0,d.createdAt])];
+        const queries=[sql.query('INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at,status,auto_accepted,confirmed_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',[d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName?1:0,d.createdAt,d.autoAccepted?'confirmed':'pending',d.autoAccepted?1:0,d.autoAccepted?d.createdAt:null])];
         if(d.receipt)queries.push(sql.query('INSERT INTO donation_receipts (donation_id,phone,mime,data) VALUES ($1,$2,$3,$4)',[d.id,d.receipt.phone,d.receipt.mime,d.receipt.data]));
         await sql.transaction(queries);
       } catch(error) {if(error.code==='23505')throw Error('UNIQUE transfer reference');throw error;}
     },
     async receipt(id) {return (await sql.query('SELECT phone,mime,data FROM donation_receipts WHERE donation_id=$1',[id]))[0];},
     async find(id) {return (await sql.query('SELECT * FROM donations WHERE id=$1',[id]))[0];},
-    async confirm(id,status) {return (await sql.query("UPDATE donations SET status=$1,confirmed_at=$2 WHERE id=$3 AND status='pending' RETURNING id",[status,status==='confirmed'?new Date().toISOString():null,id])).length;},
-    async pending() {return sql.query('SELECT d.id,name,email,amount,reference,status,created_at,r.phone,CASE WHEN r.donation_id IS NULL THEN 0 ELSE 1 END has_slip FROM donations d LEFT JOIN donation_receipts r ON r.donation_id=d.id ORDER BY created_at DESC LIMIT 200');},
+    async confirm(id,status) {return (await sql.query("UPDATE donations SET status=$1,confirmed_at=$2 WHERE id=$3 AND status='pending' AND archived_at IS NULL RETURNING id",[status,status==='confirmed'?new Date().toISOString():null,id])).length;},
+    async pending() {return sql.query('SELECT d.id,name,email,amount,reference,status,created_at,r.phone,CASE WHEN r.donation_id IS NULL THEN 0 ELSE 1 END has_slip FROM donations d LEFT JOIN donation_receipts r ON r.donation_id=d.id WHERE d.archived_at IS NULL ORDER BY created_at DESC LIMIT 200');},
     async summary() {
       const [totals,donors]=await sql.transaction([
-        sql.query("SELECT COALESCE(SUM(amount),0)::integer amount,COUNT(*)::integer contributions FROM donations WHERE status='confirmed'"),
-        sql.query("SELECT id,CASE WHEN public_name=1 THEN name ELSE 'Anonymous' END name,amount,confirmed_at FROM donations WHERE status='confirmed' ORDER BY confirmed_at DESC,id DESC")
+        sql.query("SELECT COALESCE(SUM(amount),0)::integer amount,COUNT(*)::integer contributions FROM donations WHERE status='confirmed' AND archived_at IS NULL"),
+        sql.query("SELECT id,CASE WHEN public_name=1 THEN name ELSE 'Anonymous' END name,amount,confirmed_at,auto_accepted FROM donations WHERE status='confirmed' AND archived_at IS NULL ORDER BY confirmed_at DESC,id DESC")
       ],{isolationLevel:'RepeatableRead',readOnly:true});
       return {...totals[0],seedlings:Math.floor(totals[0].amount/100),target:500,donors};
     },

@@ -9,7 +9,8 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export function createHandler({store,env=process.env,proofs=createPrivateProofs(env)}) {
 const port=Number(env.PORT || 3000);
 const googleBridge=createGoogleBridge(env);
-async function syncStoredDonation(id){const d=await store.find(id);if(!d)return false;const receipt=await store.receipt(d.id);await googleBridge({id:d.id,name:d.name,email:d.email,amount:d.amount,reference:d.reference,publicName:d.public_name===1,createdAt:d.created_at,status:d.status,receipt:receipt||null});return true;}
+const autoAccept=env.AUTO_ACCEPT_SUBMISSIONS==='true';
+async function syncStoredDonation(id){const d=await store.find(id);if(!d)return false;const receipt=await store.receipt(d.id);await googleBridge({id:d.id,name:d.name,email:d.email,amount:d.amount,reference:d.reference,publicName:d.public_name===1,createdAt:d.created_at,status:d.status,autoAccepted:d.auto_accepted===1,receipt:receipt||null});return true;}
 const origin=env.PUBLIC_ORIGIN || (env.VERCEL_PROJECT_PRODUCTION_URL?`https://${env.VERCEL_PROJECT_PRODUCTION_URL}`:`http://localhost:${port}`);
 const bank={ name:env.BANK_NAME || '', accountName:env.BANK_ACCOUNT_NAME || '', accountNumber:env.BANK_ACCOUNT_NUMBER || '', branch:env.BANK_BRANCH || '' };
 const enabled=Boolean(store) && env.DONATIONS_ENABLED==='true' && Object.values(bank).every(Boolean) && Boolean(env.CONTACT_EMAIL) && (env.ADMIN_PASSWORD || '').length>=16;
@@ -36,7 +37,7 @@ return async(req,res)=>{
       try{return json(res,200,await proofs.handle(req,input));}catch{return json(res,400,{error:'Upload permission could not be verified.'});}
     }
     if(['POST','PUT','DELETE'].includes(req.method) && req.headers.origin!==origin) return json(res,403,{error:'Request origin is not allowed.'});
-    if(path==='/api/config' && req.method==='GET') return json(res,200,{enabled,bank:enabled?bank:null,maxSlipBytes:proofs?MAX_PROOF_BYTES:1048576,contactEmail:env.CONTACT_EMAIL || '',contactPhone:env.CONTACT_PHONE || '',videoUrl:/^https:\/\//.test(env.PROJECT_VIDEO_URL || '')?env.PROJECT_VIDEO_URL:null,price:100,target:500});
+    if(path==='/api/config' && req.method==='GET') return json(res,200,{enabled,autoAccept,bank:enabled?bank:null,maxSlipBytes:proofs?MAX_PROOF_BYTES:1048576,contactEmail:env.CONTACT_EMAIL || '',contactPhone:env.CONTACT_PHONE || '',videoUrl:/^https:\/\//.test(env.PROJECT_VIDEO_URL || '')?env.PROJECT_VIDEO_URL:null,price:100,target:500});
     if(path==='/api/slip-upload-ticket'&&req.method==='POST'){
       if(!enabled||!proofs)return json(res,503,{error:'Private uploads are not available.'});
       if(!await rate(req,'upload-ticket',4))return json(res,429,{error:'Too many uploads. Please try again later.'});
@@ -64,15 +65,17 @@ return async(req,res)=>{
         receipt={phone,mime:`image/${match[1]}`,data:match[2]};
         }
       }
+      if(autoAccept&&!receipt)return json(res,400,{error:'Upload your proof before submitting a donation.'});
       const donation={id:randomBytes(12).toString('hex'),token:randomBytes(24).toString('hex'),name,email,amount:d.amount,reference,publicName:d.publicName===true,createdAt:new Date().toISOString(),receipt};
+      donation.autoAccepted=autoAccept;donation.status=autoAccept?'confirmed':'pending';
       try {await store.insert(donation);} catch(e) {if(e.message.includes('UNIQUE')) return json(res,409,{error:'This transfer reference was already submitted. Please contact the club if you need help.'}); throw e;}
       let sheetSync='not-configured';if(googleBridge){try{await googleBridge(donation);sheetSync='synced';}catch{sheetSync='pending';console.error('Google donation sync needs an admin retry.');}}
-      return json(res,201,{id:donation.id,token:donation.token,status:'pending',sheetSync});
+      return json(res,201,{id:donation.id,token:donation.token,status:autoAccept?'accepted':'pending',sheetSync});
     }
     if(path.startsWith('/api/donations/') && req.method==='GET') {
       const d=store?await store.find(path.split('/').pop()):null;
-      if(!d || !equal(req.headers.authorization,`Bearer ${d.token}`)) return json(res,404,{error:'Contribution not found.'});
-      return json(res,200,{id:d.id,status:d.status,amount:d.amount});
+      if(!d || d.archived_at || !equal(req.headers.authorization,`Bearer ${d.token}`)) return json(res,404,{error:'Contribution not found.'});
+      return json(res,200,{id:d.id,status:d.status==='confirmed'&&d.auto_accepted===1?'accepted':d.status,amount:d.amount});
     }
     if(path==='/api/admin/login' && req.method==='POST') {
       if(!store)return json(res,503,{error:'Connect the persistent database before enabling administration.'});
