@@ -65,3 +65,6 @@ html[data-theme=dark] .site-header .brand>img{width:100px;height:65px}
 html[data-theme=dark] .footer-top .brand>img{width:100px;height:67px}
 @media(max-width:650px){html[data-theme=dark] .site-header .brand>img{width:70px;height:47px;padding:5px;border-radius:10px}html[data-theme=dark] .site-header .brand{gap:8px}}
 
+/* Multiply blending was tinting the entire logo into the dark header. */
+html[data-theme=dark] :is(.site-header .brand,.footer-top .brand)>img{mix-blend-mode:normal;isolation:isolate;filter:none;opacity:1}
+
