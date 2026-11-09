@@ -41,3 +41,13 @@ test('hosted preview keeps contributions and admin closed without a persistent d
     for(const path of ['/api/admin/login','/api/donations']) {const r=await fetch(origin+path,{method:'POST',headers:{Origin:'https://harithayu.example','Content-Type':'application/json'},body:'{}'});assert.equal(r.status,503);}
   } finally {await new Promise(r=>server.close(r));}
 });
+
+test('real bank details alone cannot open donations without an admin password',async()=>{
+  const store=createStore(':memory:');
+  const server=http.createServer(createHandler({store,env:{DONATIONS_ENABLED:'true',BANK_NAME:'Test',BANK_ACCOUNT_NAME:'Test',BANK_ACCOUNT_NUMBER:'Test',BANK_BRANCH:'Test',CONTACT_EMAIL:'test@example.com'}}));
+  await new Promise(r=>server.listen(0,'127.0.0.1',r));
+  try {
+    const config=await (await fetch(`http://127.0.0.1:${server.address().port}/api/config`)).json();
+    assert.equal(config.enabled,false);assert.equal(config.bank,null);
+  } finally {await new Promise(r=>server.close(r));store.close();}
+});

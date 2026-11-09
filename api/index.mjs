@@ -3,7 +3,9 @@ let handler;
 export default async function vercelHandler(req,res) {
   try {
     if(!handler) {
-      const store=process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN
+      const store=process.env.DATABASE_URL
+        ? await (await import('../server/neon-store.mjs')).createNeonStore(process.env)
+        : process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN
         ? await (await import('../server/turso-store.mjs')).createTursoStore(process.env)
         : null;
       handler=createHandler({store});
