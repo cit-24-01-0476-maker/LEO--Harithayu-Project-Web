@@ -21,3 +21,41 @@ html[data-theme=dark] :is(.receipt-leaf,.giving-leaf){color:#21412c}
 html[data-theme=dark] .brand-divider{background:#496044}
 @media(max-width:650px){.header-actions{gap:8px}.theme-toggle{width:32px;height:32px;font-size:18px}.header-actions .button{max-width:112px;padding:9px 8px}}
 
+/* Complete dark palette: explicit secondary text and readable light receipt leaves. */
+html[data-theme=dark]{--muted:#bdcbb6;--line:#486044}
+html[data-theme=dark] :is(.site-header nav,.language,.language button,.language button.active){color:#d0ddc7}
+html[data-theme=dark] .site-header nav a:hover{color:#e2efba}
+html[data-theme=dark] :is(.strip-inner div span,.progress-top small,.progress-bottom,.impact-stats span,.map-top,.handwritten,.donation-trust>span,.amount-option small,.input-label,.amount-input,.seed-equivalent,.availability p,.donor-date,.donor-value small,.footer-bottom,.boundary-credit,.ledger-heading>span,.donation-ledger-row time){color:#bdcbb6}
+html[data-theme=dark] :is(.green-text,.step-number,.ledger-leaf){color:#c4dda4}
+html[data-theme=dark] :is(.fine-print,.photo-credit,.source-note,.si-meaning,.verified-label,.donate-heading h2 .si-meaning,#transfer-form small){color:#b8c9ae}
+html[data-theme=dark] .contribution-nature p{color:#dfebd1}
+html[data-theme=dark] .contribution-nature{background:radial-gradient(ellipse,#30472c,transparent 72%)}
+html[data-theme=dark] .contribution-layout #transfer-amount{color:#e0ca96}
+html[data-theme=dark] .currency-pill{background:#30452f;color:#d4e1c6}
+html[data-theme=dark] :is(.payment-status,.demo-journey){background:#213a29;border-color:#4b6743;color:#e3edd9}
+html[data-theme=dark] .demo-totals strong{color:#e0edce}
+html[data-theme=dark] .demo-pill{color:#eddaaa}
+html[data-theme=dark] .donor-avatar{background:#32492e;color:#d7e7be}
+html[data-theme=dark] .progress-track{background:#354a31}
+html[data-theme=dark] .progress-track>span{background:#b2d47d}
+html[data-theme=dark] .form-error{color:#ffb8a8!important}
+html[data-theme=dark] :is(input,textarea,select):focus-visible{outline:2px solid #d0e497;outline-offset:3px}
+html[data-theme=dark] input[type=file]::file-selector-button{background:#d0e497;color:#193c30;border:0;border-radius:4px;padding:8px 12px;margin-right:12px;cursor:pointer}
+html[data-theme=dark] input[type=checkbox]{accent-color:#c5df95}
+html[data-theme=dark] :is(.receipt-leaf strong,.receipt-leaf .leaf-amount,.receipt-leaf>span:not(.receipt-leaf-icon)){color:#21412b}
+html[data-theme=dark] .receipt-leaf small{color:#405736}
+html[data-theme=dark] .receipt-leaf .receipt-leaf-icon{color:#355d2c!important}
+html[data-theme=dark] .receipt-leaf .si-meaning{color:#405736}
+html[data-theme=dark] .dialog-close{color:#d5e2c8}
+html[data-theme=dark] dialog :is(h2,h3,label){color:#e0e9d6}
+/* A pale cartographic surface preserves province and seedling contrast. */
+html[data-theme=dark] #island-map{background:#e8eedf;border-radius:18px;color:#24422e}
+html[data-theme=dark] #island-map text{fill:#38553c}
+html[data-theme=dark] :is(.map-legend,.map-legend>span){color:#c8d7bd}
+html[data-theme=dark] :is(.empty-state,.donation-ledger-row,.plan-notice,.inline-contribution,.donation-card){border-color:#486044}
+html[data-theme=dark] .button{background:#3f6d4c;color:#fff}
+html[data-theme=dark] .button:hover{background:#507f5b}
+html[data-theme=dark] .button.lime{background:#d0e497;color:#254130}
+html[data-theme=dark] .button.lime:hover{background:#e0edb7}
+html[data-theme=dark] a:focus-visible,html[data-theme=dark] button:focus-visible{outline-color:#d0e497}
+
