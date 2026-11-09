@@ -1,3 +1,4 @@
+import { donationTreeLayout } from './donation-tree-layout.js';
 import { uploadPrivateProof } from './proof-upload.js';
 import { createSoundscape } from './lagoon-audio.js';
 import { islandPolygons } from './sri-lanka-map.js';
@@ -105,7 +106,27 @@ $('#more-donations').addEventListener('click',()=>{visibleDonations+=20;renderDo
 
 $('#film-dialog').addEventListener('close',()=>soundscape.duck(false));
 
-function renderGivingTree(){const host=$('#donor-leaves');if(!host)return;const leaves=[...demoLeaves,...summary.donors];host.replaceChildren(...leaves.map((d,i)=>{const leaf=document.createElement('article');leaf.className='giving-leaf receipt-leaf';leaf.style.setProperty('--leaf-delay',`${i%8*.09}s`);const slot=i%12;const positions=[[19,29],[36,20],[53,23],[72,28],[12,47],[32,42],[53,43],[76,46],[24,63],[44,60],[65,64],[82,63]];leaf.style.setProperty('--leaf-x',positions[slot][0]+'%');leaf.style.setProperty('--leaf-y',positions[slot][1]+'%');leaf.style.setProperty('--leaf-tilt',`${i%2?5:-5}deg`);leaf.style.setProperty('--sway-delay',`${-(i%7)*.8}s`);leaf.style.setProperty('--sway-duration',`${5+i%4}s`);const icon=document.createElement('span');icon.className='receipt-leaf-icon';icon.textContent='❧';const name=document.createElement('strong');name.textContent=d.name==='Anonymous'?t('නිර්නාමික','Anonymous'):d.name;const value=document.createElement('span');value.textContent=money(d.amount);const detail=document.createElement('small');detail.textContent=d.demo?t('DEMO · ඔබට පමණයි','DEMO · Only you'):t('යැවූ දායකත්වය','Donation submitted');leaf.append(icon,name,value,detail);if(d.demo)leaf.classList.add('demo-leaf');if(i>=(matchMedia('(max-width:650px)').matches?6:12))leaf.classList.add('overflow-leaf');return leaf;}));$('#clear-demo-leaves').hidden=!demoLeaves.length;if(!leaves.length){const p=document.createElement('p');p.className='tree-empty';p.textContent=t('ඔබේ කරුණාවෙන් පළමු කොළය වැඩේවි.','The first leaf is waiting for a little kindness.');host.append(p);}}
+function renderGivingTree(){
+ const host=$('#donor-leaves');if(!host)return;
+ const scene=host.closest('.tree-scene'),leaves=[...demoLeaves,...summary.donors],bounds=scene.getBoundingClientRect();
+ const layout=donationTreeLayout(Math.max(bounds.width,240),Math.max(bounds.height,320),leaves.length);
+ host.dataset.density=layout.density;host.style.setProperty('--card-width',layout.cardWidth+'px');host.style.setProperty('--card-height',layout.cardHeight+'px');
+ let overflow=$('#donor-overflow');if(!overflow){overflow=document.createElement('div');overflow.id='donor-overflow';overflow.className='donor-overflow';overflow.setAttribute('role','list');overflow.setAttribute('aria-label','More donation leaves');scene.after(overflow);}
+ const cards=leaves.map((d,i)=>{
+  const leaf=document.createElement('article');leaf.className='giving-leaf receipt-leaf';leaf.setAttribute('role','listitem');
+  leaf.style.setProperty('--leaf-delay',`${i%8*.06}s`);leaf.style.setProperty('--leaf-tilt',`${i%2?1:-1}deg`);leaf.style.setProperty('--sway-delay',`${-(i%7)*.8}s`);leaf.style.setProperty('--sway-duration',`${5+i%4}s`);
+  if(i<layout.visible){leaf.style.setProperty('--leaf-x',layout.positions[i].x+'px');leaf.style.setProperty('--leaf-y',layout.positions[i].y+'px');}else leaf.classList.add('overflow-leaf');
+  const icon=document.createElement('span');icon.className='receipt-leaf-icon';icon.textContent='❧';icon.setAttribute('aria-hidden','true');
+  const name=document.createElement('strong');name.textContent=d.name==='Anonymous'?t('නිර්නාමික','Anonymous'):d.name;
+  const value=document.createElement('span');value.className='leaf-amount';value.textContent=money(d.amount);
+  const detail=document.createElement('small');detail.textContent=d.demo?t('DEMO · ඔබට පමණයි','DEMO · Only you'):t('යැවූ දායකත්වය','Donation submitted');
+  leaf.title=name.textContent+' · '+value.textContent;leaf.setAttribute('aria-label',leaf.title);leaf.append(icon,name,value,detail);if(d.demo)leaf.classList.add('demo-leaf');return leaf;
+ });
+ host.replaceChildren(...cards.slice(0,layout.visible));overflow.replaceChildren(...cards.slice(layout.visible));overflow.hidden=leaves.length<=layout.visible;
+ host.setAttribute('role','list');host.setAttribute('aria-label','Donation leaves on the tree');$('#clear-demo-leaves').hidden=!demoLeaves.length;
+ if(!leaves.length){const p=document.createElement('p');p.className='tree-empty';p.textContent=t('ඔබේ කරුණාවෙන් පළමු කොළය වැඩේවි.','The first leaf is waiting for a little kindness.');host.append(p);}
+}
+
 function renderDemoJourney(){const panel=$('#demo-journey');panel.hidden=!demoLeaves.length;const total=demoLeaves.reduce((n,d)=>n+d.amount,0);$('#demo-total').textContent=money(total);$('#demo-count').textContent=demoLeaves.length;$('#demo-seedlings').textContent=Math.floor(total/100);$('#demo-real-total').textContent=money(summary.amount);const group=$('#demo-map-seedlings');group.replaceChildren(...points.slice(Math.min(summary.seedlings,500),Math.min(500,summary.seedlings+Math.floor(total/100))).map(p=>{const seed=sprout(p,17);seed.classList.add('demo-map-sprout');return seed;}));}
 function renderProvinces(){const host=$('#province-boundaries');if(!host)return;host.replaceChildren(...provinces.map((province,i)=>{const g=document.createElementNS('http://www.w3.org/2000/svg','g');const path=document.createElementNS(g.namespaceURI,'path');path.setAttribute('d',province.path);path.setAttribute('class','province-area');path.style.setProperty('--province-fill',i%2?'#d2dfc7':'#e4ebdb');const title=document.createElementNS(g.namespaceURI,'title');title.textContent=province.name+' / '+province.si;path.append(title);g.append(path);return g;}));}
 renderProvinces();
@@ -126,3 +147,5 @@ const treeObserver=new IntersectionObserver(entries=>{for(const entry of entries
 livingTrees.forEach(tree=>treeObserver.observe(tree));treeMotionPreference.addEventListener('change',updateLivingTrees);document.addEventListener('visibilitychange',updateLivingTrees);updateLivingTrees();
 
 
+
+const donationTreeResize=new ResizeObserver(()=>renderGivingTree());donationTreeResize.observe(document.querySelector('.tree-scene'));
