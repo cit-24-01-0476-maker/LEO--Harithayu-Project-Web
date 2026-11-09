@@ -165,3 +165,12 @@ html[lang=en] .mangrove-intro:not(.growing) h1{font-size:clamp(40px,5vw,64px);li
 @media(max-width:650px){.mangrove-intro.growing .intro-brand-logo{width:90vw;max-height:43svh}.welcome-club{font-size:8px;letter-spacing:2px}.welcome-tagline{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.welcome-enter{transition:none}}
 
+/* Film composition: the animated project emblem is the only foreground mark. */
+.mangrove-intro.growing .intro-copy{top:50%;left:0;right:0;bottom:auto;width:100%;transform:translateY(-50%);gap:0;padding:20px;box-sizing:border-box}
+.mangrove-intro.growing h1,.mangrove-intro.growing .intro-subtitle,.mangrove-intro.growing .intro-actions,.mangrove-intro.growing .intro-growth-track,.mangrove-intro.growing .intro-overline{display:none}
+.mangrove-intro.growing .intro-brand-logo{display:block;width:min(1000px,90vw);height:auto;max-height:78svh;aspect-ratio:3/2;margin:0;flex-shrink:1}
+.mangrove-intro.film-error .intro-actions{display:flex}
+.mangrove-intro.film-error .intro-skip{display:block}
+@media(max-width:650px){.mangrove-intro.growing .intro-copy{padding:8px}.mangrove-intro.growing .intro-brand-logo{width:96vw;max-height:76svh}}
+@media(max-height:500px) and (min-width:651px){.mangrove-intro.growing .intro-brand-logo{width:auto;height:78svh;max-width:90vw}}
+
