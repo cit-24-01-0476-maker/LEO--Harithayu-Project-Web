@@ -13,7 +13,16 @@
 <body>
 <button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="false" aria-label="Enable ambient sound">♫ Sound on</button>
 <a class="skip" href="#main">Skip to content / අන්තර්ගතයට යන්න</a>
-<div class="intro mangrove-intro" id="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+<section id="welcome-screen" class="welcome-screen" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+  <div class="welcome-content">
+    <p class="welcome-club">LEO CLUB OF SLTC PRESENTS</p>
+    <h1 id="welcome-title">Harithayu</h1>
+    <p class="welcome-tagline">A little seedling. A living tomorrow.</p>
+    <button id="welcome-enter" class="welcome-enter" type="button"><span>Enter Harithayu</span><span aria-hidden="true">→</span></button>
+    <p class="welcome-audio">Enter to begin with sound.<span lang="si">(හඬ සමඟ ඇරඹීමට පිවිසෙන්න.)</span></p>
+  </div>
+</section>
+<div class="intro mangrove-intro" id="intro" hidden role="dialog" aria-modal="true" aria-labelledby="intro-title">
   <video class="mangrove-scene intro-film" id="mangrove-scene" muted playsinline preload="auto" poster="/assets/mangrove-intro-poster.jpg" aria-label="A mangrove seedling grows into a tree in a coastal lagoon"><source src="/assets/mangrove-intro-hq.mp4" type="video/mp4"></video>
   <div class="intro-vignette" aria-hidden="true"></div>
   <span class="intro-overline">LEO CLUB OF SLTC PRESENTS</span>
@@ -78,5 +87,6 @@
 <dialog id="info-dialog"><button class="dialog-close" data-close aria-label="Close dialog">×</button><div id="info-content"></div></dialog>
 
 </body></html>
+
 
 

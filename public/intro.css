@@ -147,3 +147,21 @@ html[lang=en] .mangrove-intro:not(.growing) h1{font-size:clamp(40px,5vw,64px);li
 @media(max-height:620px){.mangrove-intro:not(.growing) .intro-brand-logo{max-height:25svh;width:auto;margin-bottom:6px}.mangrove-intro:not(.growing) .intro-actions{margin-top:16px;gap:5px}.mangrove-intro:not(.growing) .intro-subtitle{margin-top:8px}.intro-audio-hint{margin-top:7px}.mangrove-intro:not(.growing) .intro-overline{top:15px}}
 @media(prefers-reduced-motion:reduce){.mangrove-intro:not(.growing) .intro-enter{transition:none}}
 
+/* Separate welcome screen unlocks audio before the full-size film intro. */
+.welcome-screen{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:#071d18;color:#e6eddb;isolation:isolate;padding:28px;text-align:center;overflow:auto}
+.welcome-screen[hidden]{display:none}
+.welcome-screen::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(#031914bc,#031914ee),url('/assets/mangrove-intro-poster.jpg') center/cover;opacity:.7}
+.welcome-content{width:min(430px,100%);display:flex;flex-direction:column;align-items:center;padding:32px 0}
+.welcome-club{font:9px/1.8 'DM Sans',sans-serif;letter-spacing:3px;color:#b2c4aa;margin:0 0 30px}
+.welcome-content h1{font:400 clamp(44px,8vw,68px)/1.15 Georgia,serif;letter-spacing:1px;margin:0;color:#e8eedb}
+.welcome-tagline{font:12px/1.9 'DM Sans',sans-serif;color:#c1d1b9;margin:16px 0 36px}
+.welcome-enter{display:flex;align-items:center;justify-content:space-between;gap:40px;width:min(270px,100%);min-height:56px;padding:16px 25px;border:1px solid #e0ebc1;border-radius:32px;background:#dce8bf;color:#173e2c;font:500 13px 'DM Sans',sans-serif;box-shadow:0 10px 40px #0003;cursor:pointer;transition:transform .2s,background .2s}
+.welcome-enter:hover{background:#edf4d9;transform:translateY(-2px)}
+.welcome-enter:focus-visible{outline:2px solid #dce8bf;outline-offset:6px}
+.welcome-enter span:last-child{font-size:21px}
+.welcome-audio{font:10px/1.8 'DM Sans',sans-serif;color:#aebfa7;margin:24px 0 0}
+.welcome-audio span{display:block;font:9px/2 'Noto Sans Sinhala',sans-serif;margin-top:4px}
+.mangrove-intro.growing .intro-brand-logo{width:min(620px,82vw);height:auto;max-height:48svh}
+@media(max-width:650px){.mangrove-intro.growing .intro-brand-logo{width:90vw;max-height:43svh}.welcome-club{font-size:8px;letter-spacing:2px}.welcome-tagline{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.welcome-enter{transition:none}}
+
