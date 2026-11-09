@@ -153,3 +153,14 @@ livingTrees.forEach(tree=>treeObserver.observe(tree));treeMotionPreference.addEv
 
 const donationTreeResize=new ResizeObserver(()=>renderGivingTree());donationTreeResize.observe(document.querySelector('.tree-scene'));
 
+// Silent hero film only runs while the main website and hero are visible.
+const heroVideo=document.querySelector('#hero-video');
+if(heroVideo){
+ let heroVisible=true;
+ const motion=matchMedia('(prefers-reduced-motion: reduce)');
+ const syncHero=()=>{if(!document.hidden&&!document.body.classList.contains('intro-open')&&heroVisible&&!motion.matches){heroVideo.muted=true;heroVideo.play().catch(()=>{});}else heroVideo.pause();};
+ new IntersectionObserver(entries=>{heroVisible=entries[0].isIntersecting;syncHero();},{threshold:.05}).observe(heroVideo);
+ new MutationObserver(syncHero).observe(document.body,{attributes:true,attributeFilter:['class']});
+ document.addEventListener('visibilitychange',syncHero);motion.addEventListener('change',syncHero);
+}
+
