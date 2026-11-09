@@ -59,3 +59,9 @@ html[data-theme=dark] .button.lime{background:#d0e497;color:#254130}
 html[data-theme=dark] .button.lime:hover{background:#e0edb7}
 html[data-theme=dark] a:focus-visible,html[data-theme=dark] button:focus-visible{outline-color:#d0e497}
 
+/* Original full-colour wordmark needs an ivory surface on dark backgrounds. */
+html[data-theme=dark] :is(.site-header .brand,.footer-top .brand)>img{background:#f4f6e9;border:1px solid #e0e7cf;border-radius:14px;padding:7px;object-fit:contain;box-sizing:content-box;box-shadow:0 3px 14px #0002;filter:none;opacity:1;flex-shrink:0}
+html[data-theme=dark] .site-header .brand>img{width:100px;height:65px}
+html[data-theme=dark] .footer-top .brand>img{width:100px;height:67px}
+@media(max-width:650px){html[data-theme=dark] .site-header .brand>img{width:70px;height:47px;padding:5px;border-radius:10px}html[data-theme=dark] .site-header .brand{gap:8px}}
+
