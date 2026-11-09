@@ -189,3 +189,22 @@ html[lang=en] .mangrove-intro:not(.growing) h1{font-size:clamp(40px,5vw,64px);li
 .mangrove-intro.growing .intro-copy{position:absolute;inset:0;top:0;left:0;right:0;bottom:0;z-index:3;transform:none}
 .mangrove-intro.growing .intro-brand-logo{opacity:1;filter:brightness(1.12) saturate(1.08) drop-shadow(0 12px 16px #0007)}
 
+/* Refined welcome typography and a truly centred entry action. */
+.welcome-screen{padding:28px 24px;background:#061c16}
+.welcome-screen::before{background:radial-gradient(ellipse at 50% 42%,#09271b55,#031811e8 85%),linear-gradient(#041b1566,#041b15bb),url('/assets/mangrove-intro-poster.jpg') center/cover;opacity:1}
+.welcome-content{width:min(560px,100%);padding:36px 0;text-align:center}
+.welcome-club{font-size:9px;letter-spacing:3.8px;line-height:2;color:#bfccae;margin:0 0 32px}
+.welcome-content h1{font-size:clamp(48px,7vw,78px);line-height:1.12;letter-spacing:1px;color:#edf0de;text-shadow:0 5px 30px #0003}
+.welcome-tagline{font-size:12px;letter-spacing:.35px;line-height:1.9;margin:20px 0 38px;color:#d0dac4}
+.welcome-enter{position:relative;justify-content:center;gap:16px;width:min(272px,100%);min-height:58px;padding:17px 28px;font-size:13px;letter-spacing:.35px;background:linear-gradient(135deg,#e4edcb,#ccdca8);border-color:#e5edcc;box-shadow:0 10px 36px #0003,inset 0 1px 0 #fff8}
+.welcome-enter span:first-child{margin:0;text-align:center}
+.welcome-enter span:last-child{font-size:20px;line-height:1;transform:translateY(-1px);transition:transform .25s}
+.welcome-enter:hover span:last-child{transform:translate(4px,-1px)}
+.welcome-enter:hover{box-shadow:0 14px 42px #0004,inset 0 1px 0 #fff8}
+.welcome-audio{font-size:10px;letter-spacing:.3px;line-height:1.9;margin-top:25px;color:#b8c7ac}
+.welcome-audio::before{content:"";display:block;width:26px;height:1px;background:#aabf8755;margin:0 auto 17px}
+.welcome-audio span{font-size:9px;color:#a9baa1;margin-top:4px;letter-spacing:0}
+@media(max-width:650px){.welcome-content{padding:25px 0}.welcome-club{font-size:8px;letter-spacing:2.6px;margin-bottom:28px}.welcome-content h1{font-size:clamp(46px,12vw,64px)}.welcome-tagline{font-size:11px;margin:17px 0 30px}.welcome-enter{width:min(260px,100%);min-height:56px}.welcome-audio{margin-top:22px}}
+@media(max-height:500px){.welcome-content{padding:12px 0}.welcome-club{margin-bottom:14px}.welcome-content h1{font-size:44px}.welcome-tagline{margin:10px 0 20px}.welcome-audio{margin-top:14px}.welcome-audio::before{margin-bottom:10px}}
+@media(prefers-reduced-motion:reduce){.welcome-enter span:last-child{transition:none}}
+
