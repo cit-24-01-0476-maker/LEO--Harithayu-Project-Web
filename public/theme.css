@@ -74,3 +74,11 @@ html[data-theme=dark] .brand .brand-logo-transparent{filter:drop-shadow(0 5px 3p
 .footer-top .brand .brand-logo-transparent{width:108px;height:72px}
 @media(max-width:650px){.site-header .brand .brand-logo-transparent{width:80px;height:54px}}
 
+/* Reuse the intro's living emblem with the same colour, light and independent motion. */
+.brand .living-brand-logo{filter:brightness(1.12) saturate(1.08) drop-shadow(0 4px 3px #0005);transform:perspective(600px) rotateY(-3deg)}
+html[data-theme=dark] .brand .living-brand-logo{filter:brightness(1.12) saturate(1.08) drop-shadow(0 5px 3px #0008) drop-shadow(0 0 1px #c3e3a344)}
+.brand .living-brand-logo .logo-leaf-sway{animation:logo-breeze-living 4.8s ease-in-out infinite}
+.brand .living-brand-logo .logo-water-flow{animation:logo-current-living 5.7s ease-in-out infinite}
+.brand .living-brand-logo .logo-sun-drift{animation:logo-sunlight 8s ease-in-out infinite}
+@media(prefers-reduced-motion:reduce){.brand .living-brand-logo *{animation:none!important}.brand .living-brand-logo{transform:none}}
+
