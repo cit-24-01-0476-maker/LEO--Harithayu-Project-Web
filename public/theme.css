@@ -68,3 +68,9 @@ html[data-theme=dark] .footer-top .brand>img{width:100px;height:67px}
 /* Multiply blending was tinting the entire logo into the dark header. */
 html[data-theme=dark] :is(.site-header .brand,.footer-top .brand)>img{mix-blend-mode:normal;isolation:isolate;filter:none;opacity:1}
 
+/* Transparent full-colour brand; depth comes from shadows, never a white tile. */
+.brand .brand-logo-transparent{display:block;width:108px;height:72px;flex-shrink:0;overflow:visible;background:none;border:0;padding:0;filter:drop-shadow(0 3px 2px #0003);transform:perspective(600px) rotateY(-3deg)}
+html[data-theme=dark] .brand .brand-logo-transparent{filter:drop-shadow(0 5px 3px #0008) drop-shadow(0 0 1px #e9f7bf99);background:none;mix-blend-mode:normal}
+.footer-top .brand .brand-logo-transparent{width:108px;height:72px}
+@media(max-width:650px){.site-header .brand .brand-logo-transparent{width:80px;height:54px}}
+
