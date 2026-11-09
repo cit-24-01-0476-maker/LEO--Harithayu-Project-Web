@@ -174,3 +174,14 @@ html[lang=en] .mangrove-intro:not(.growing) h1{font-size:clamp(40px,5vw,64px);li
 @media(max-width:650px){.mangrove-intro.growing .intro-copy{padding:8px}.mangrove-intro.growing .intro-brand-logo{width:96vw;max-height:76svh}}
 @media(max-height:500px) and (min-width:651px){.mangrove-intro.growing .intro-brand-logo{width:auto;height:78svh;max-width:90vw}}
 
+/* Balanced emblem scale and a dedicated bottom-centre skip control. */
+.mangrove-intro.growing .intro-brand-logo{width:min(760px,76vw);max-height:65svh}
+.mangrove-intro.growing .intro-actions{display:flex;position:fixed;left:50%;bottom:max(26px,env(safe-area-inset-bottom));transform:translateX(-50%);margin:0;justify-content:center;z-index:5}
+.mangrove-intro.growing .intro-copy{position:static;transform:none;padding:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center}
+.mangrove-intro.growing .intro-enter{display:none}
+.mangrove-intro.growing .intro-skip{display:flex;align-items:center;justify-content:center;min-width:92px;min-height:44px;padding:10px 23px;border:1px solid #d5e3c45c;border-radius:24px;background:#08231ac9;color:#e4ecd9;font:12px 'DM Sans',sans-serif;letter-spacing:.5px;text-decoration:none;backdrop-filter:blur(8px);transition:background .2s,border-color .2s}
+.mangrove-intro.growing .intro-skip:hover{background:#244537;border-color:#d5e3c4}
+.mangrove-intro.growing .intro-skip:focus-visible{outline:2px solid #dce8bf;outline-offset:4px}
+@media(max-width:650px){.mangrove-intro.growing .intro-brand-logo{width:84vw;max-height:62svh}.mangrove-intro.growing .intro-actions{bottom:max(24px,env(safe-area-inset-bottom))}}
+@media(max-height:500px) and (min-width:651px){.mangrove-intro.growing .intro-brand-logo{width:auto;height:62svh;max-width:76vw}}
+
