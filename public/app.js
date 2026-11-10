@@ -6,7 +6,7 @@ import { provinces } from './sri-lanka-provinces.js';
 import { seedlingOwners } from './donation-map.js';
 import { createMangroveIntro } from './mangrove-video.js';
 
-let language=localStorage.getItem('harithayu-ui-language')==='en'?'en':'si';
+let language='si';try{const p=new URLSearchParams(window.location.search).get('lang');if(p==='en'||p==='si')language=p;else if(localStorage.getItem('harithayu-user-lang')==='en')language='en';}catch{}
 let config={enabled:false,price:100,target:500},summary={amount:0,seedlings:0,contributions:0,donors:[]},summaryLoaded=false;
 let toastTimer,pendingTimer;
 const demoLeaves=[];
@@ -44,8 +44,8 @@ welcome.addEventListener('keydown',event=>{if(event.key==='Tab'){event.preventDe
 $('#enter-site').addEventListener('click',()=>enter());$('#enter-text').addEventListener('click',()=>enter());$('#skip-intro').addEventListener('click',()=>enter(true));
 intro.addEventListener('keydown',e=>{if(e.key==='Escape'){enter(true);return;}if(e.key==='Tab'){const buttons=[...intro.querySelectorAll('button'),$('#sound-toggle')].filter(b=>!b.disabled);if(e.shiftKey && document.activeElement===buttons[0]){e.preventDefault();buttons.at(-1).focus();}else if(!e.shiftKey && document.activeElement===buttons.at(-1)){e.preventDefault();buttons[0].focus();}}});
 $('#replay-intro').addEventListener('click',()=>{clearTimeout(enterTimer);clearTimeout(closeTimer);prepareIntro();});
-function translate(){document.documentElement.lang=language;$$('[data-en]').forEach(el=>{el.textContent=language==='si'?(el.dataset.si||el.dataset.en):el.dataset.en;if(language==='en'&&el.dataset.meaning){const meaning=document.createElement('small');meaning.className='si-meaning';meaning.lang='si';meaning.textContent=' ('+el.dataset.meaning+')';el.append(meaning);}});$('#language-toggle').textContent=language==='si'?'English':'සිංහල';$('#language-toggle').setAttribute('aria-pressed',language==='si');updateAmount();renderSummary();renderAvailability();}
-$('#language-toggle').addEventListener('click',()=>{language=language==='si'?'en':'si';localStorage.setItem('harithayu-ui-language',language);translate();if(!config.enabled)$('#contribute').click();});
+function translate(){document.documentElement.lang=language;$$('[data-en]').forEach(el=>{el.textContent=language==='si'?(el.dataset.si||el.dataset.en):el.dataset.en;if(language==='en'&&el.dataset.meaning){const meaning=document.createElement('small');meaning.className='si-meaning';meaning.lang='si';meaning.textContent=' ('+el.dataset.meaning+')';el.append(meaning);}});$('#language-toggle').textContent=language==='si'?'English':'සිංහල';$('#language-toggle').setAttribute('aria-pressed',language==='si');updateAmount();renderSummary();renderAvailability();renderBankDetails();}
+$('#language-toggle').addEventListener('click',()=>{language=language==='si'?'en':'si';try{localStorage.setItem('harithayu-user-lang',language);localStorage.removeItem('harithayu-ui-language');}catch{}translate();if(!config.enabled)$('#contribute').click();});
 function amount(){return Number($('#custom-amount').value);}
 function updateAmount(){const n=amount(),valid=Number.isSafeInteger(n)&&n>=100&&n<=1000000;$('#seed-equivalent').textContent=valid?t(`🌱 පැළ ${Math.floor(n/100)}ක රෝපණයට දායකත්වයක්`,`🌱 Supports ${Math.floor(n/100)} seedling${Math.floor(n/100)===1?'':'s'}`):t('රු.100 සිට රු.1,000,000 දක්වා මුදලක් ඇතුළත් කරන්න.','Enter an amount between LKR 100 and LKR 1,000,000.');$('#contribute').disabled=!valid;$$('.amount-option').forEach(b=>{b.classList.toggle('selected',Number(b.dataset.amount)===n);b.setAttribute('aria-pressed',Number(b.dataset.amount)===n);});}
 $$('.amount-option').forEach(b=>b.addEventListener('click',()=>{$('#custom-amount').value=b.dataset.amount;updateAmount();}));$('#custom-amount').addEventListener('input',updateAmount);
@@ -87,11 +87,70 @@ function renderDonationLedger(){
   $('#more-donations').textContent=t('තවත් දායකත්ව බලන්න ↓','Show more donations ↓');
 }
 async function refreshSummary(){try{const r=await fetch('/api/summary');if(!r.ok)throw Error();const previous=summary.seedlings;const next=await r.json();if(summaryLoaded&&JSON.stringify(next)===JSON.stringify(summary)){document.querySelector('#data-status').textContent='';return;}summary=next;summaryLoaded=true;renderSummary();$('#data-status').textContent='';if(summary.seedlings>previous && previous>0)notifyMap(t('තවත් දායකත්වයක් සමඟ අපේ සිතියම වැඩෙනවා!','Our map is growing with another submitted donation!'));}catch{$('#data-status').textContent=t('දායකත්ව දත්ත ලබාගත නොහැකි විය. නැවත උත්සාහ කරමින් පවතී.','Contribution data could not be loaded. Retrying shortly.');if(!summaryLoaded){$('#total-raised').textContent='—';$('#seed-count').textContent='—';$('#donor-count').textContent='—';}}}
-function renderAvailability(){if(config.enabled&&config.autoAccept){$('#availability p').textContent=t('රිසිට්පත සමඟ යැවූ දායකත්වය ස්වයංක්‍රීයව එකතුවට හා සිතියමට එක් වේ. බැංකු ගෙවීම වෙනම තහවුරු කර නැහැ.','Your proof submission appears automatically in the total and map. Bank payment is not independently verified.');$('#contribute span:first-child').textContent=t('බැංකු විස්තර ලබාගන්න','Get bank transfer details');$('#payment-note').textContent=t('ස්වයංක්‍රීය දායකත්ව සටහන් · බැංකු ගෙවීම තහවුරු කර නැහැ','Automatic submissions · Not bank-verified');return;}if(!config.enabled){$('#availability p').textContent=t('Demo bank details සහ slip form එක බලන්න. මේවා සැබෑ ගිණුම් විස්තර නොවේ. මුදල් මාරු නොකරන්න.','Explore the demo bank details and slip form. These are not real account details. Do not transfer money.');$('#contribute span:first-child').textContent=t('Demo දායකත්ව form එක බලන්න','Explore the donation form');$('#payment-note').textContent=t('DEMO පමණයි · මුදල් හෝ slips භාර නොගනී','DEMO ONLY · No payments or slips accepted');}if(config.enabled){$('#availability p').textContent=t('බැංකු මාරුවකින් දායක වන්න. Club එකෙන් තහවුරු වූ පසු සිතියමේ ඔබේ පැළය වැඩෙනවා.','Contribute by bank transfer. Your seedling grows after the club verifies your transfer.');$('#contribute span:first-child').textContent=t('බැංකු විස්තර ලබාගන්න','Get bank transfer details');$('#payment-note').textContent=t('බැංකු මාරුව · Club එකෙන් පරීක්ෂා කර තහවුරු කෙරේ','Bank transfer · Manually verified by the club');}}
+const officialBank={name:'Bank of Ceylon (BOC) - Padukka',branchCode:'678',accountName:'Leo Club of Sri Lanka Technology Campus',accountNumber:'80824610'};
+function renderBankDetails(){
+  const b=(config&&config.bank&&config.bank.accountNumber)?config.bank:officialBank;
+  const fields=[
+    [t('බැංකුව (Bank)','Bank'),b.name||officialBank.name],
+    [t('ශාඛා අංකය (Branch Code)','Branch Code'),b.branchCode||officialBank.branchCode],
+    [t('ගිණුමේ නම (Account Name)','Account Name'),b.accountName||officialBank.accountName],
+    [t('ගිණුම් අංකය (Account Number)','Account Number'),b.accountNumber||officialBank.accountNumber]
+  ];
+  $('#bank-details').replaceChildren(...fields.map(([k,v])=>{
+    const row=document.createElement('div');row.className='bank-row';
+    const label=document.createElement('span');label.className='bank-label';label.textContent=k;
+    const val=document.createElement('strong');val.className='bank-value';val.textContent=v;
+    if(k.includes('Account Number')||k.includes('ගිණුම් අංකය')){
+      const copyBtn=document.createElement('button');copyBtn.type='button';copyBtn.className='bank-copy-btn';
+      copyBtn.setAttribute('aria-label',t('ගිණුම් අංකය පිටපත් කරන්න','Copy account number'));
+      copyBtn.textContent=t('පිටපත් කරන්න 📋','Copy 📋');
+      copyBtn.addEventListener('click',e=>{
+        e.preventDefault();
+        navigator.clipboard?.writeText(v).then(()=>{
+          copyBtn.textContent=t('පිටපත් විය! ✓','Copied! ✓');
+          setTimeout(()=>{copyBtn.textContent=t('පිටපත් කරන්න 📋','Copy 📋');},2500);
+        }).catch(()=>{});
+      });
+      val.append(' ',copyBtn);
+    }
+    row.append(label,val);
+    return row;
+  }));
+}
+function renderAvailability(){
+  if(config.enabled&&config.autoAccept){
+    $('#availability p').textContent=t('රිසිට්පත සමඟ යැවූ දායකත්වය ස්වයංක්‍රීයව එකතුවට හා සිතියමට එක් වේ. බැංකු ගෙවීම වෙනම තහවුරු කර නැහැ.','Your proof submission appears automatically in the total and map. Bank payment is not independently verified.');
+    $('#contribute span:first-child').textContent=t('බැංකු විස්තර ලබාගන්න','Get bank transfer details');
+    $('#payment-note').textContent=t('ස්වයංක්‍රීය දායකත්ව සටහන් · බැංකු ගෙවීම තහවුරු කර නැහැ','Automatic submissions · Not bank-verified');
+    return;
+  }
+  if(!config.enabled){
+    $('#availability p').textContent=t('බැංකු මාරුවකින් දායක වන්න. ඔබ ලබාදෙන රිසිට්පත Club එකෙන් පරීක්ෂා කර තහවුරු කරනු ලැබේ.','Contribute by bank transfer. Upload your slip and the club will verify your submission.');
+    $('#contribute span:first-child').textContent=t('බැංකු විස්තර ලබාගන්න','Get bank transfer details');
+    $('#payment-note').textContent=t('බැංකු මාරුව · Bank of Ceylon (BOC)','Bank transfer · Bank of Ceylon (BOC)');
+  }
+  if(config.enabled){
+    $('#availability p').textContent=t('බැංකු මාරුවකින් දායක වන්න. Club එකෙන් තහවුරු වූ පසු සිතියමේ ඔබේ පැළය වැඩෙනවා.','Contribute by bank transfer. Your seedling grows after the club verifies your transfer.');
+    $('#contribute span:first-child').textContent=t('බැංකු විස්තර ලබාගන්න','Get bank transfer details');
+    $('#payment-note').textContent=t('බැංකු මාරුව · Club එකෙන් පරීක්ෂා කර තහවුරු කෙරේ','Bank transfer · Manually verified by the club');
+  }
+}
 function notifyMap(text){clearTimeout(toastTimer);$('#map-toast').textContent=text;$('#map-toast').hidden=false;toastTimer=setTimeout(()=>$('#map-toast').hidden=true,5000);}
 function preview(){const index=Math.min(summary.seedlings,points.length-1);const tree=sprout(points[index] || [232,300],36);tree.classList.add('new-sprout');$('#preview-sprout').replaceChildren(tree);$('.map-panel').scrollIntoView({behavior:reduced?'instant':'smooth',block:'center'});notifyMap(t('🌱 මෙන්න ඔබේ පුංචි පැළය! මෙය preview එකක් පමණයි.','🌱 Your little seedling! This is a preview only.'));setTimeout(()=>tree.remove(),9000);}
 $('#preview-tree').addEventListener('click',preview);
-$('#contribute').addEventListener('click',()=>{if(!config.enabled){$('#transfer-amount').textContent=t('DEMO පමණයි — මුදල් මාරු නොකරන්න.','DEMO ONLY — Do not transfer money.');$('#bank-details').replaceChildren(...['Bank: Sample Bank (DEMO)','Account name: Harithayu Demo — Not a real account','Account number: DEMO-NOT-A-REAL-ACCOUNT','Branch: Sample Branch (DEMO)'].map(text=>{const row=document.createElement('div');row.textContent=text;return row;}));$('#transfer-form [name=amount]').value=amount();const submit=$('#transfer-form [type=submit]');submit.disabled=false;submit.textContent=t('Demo කොළය වවන්න ↗','Grow my demo leaf ↗');$('#transfer-form [name=reference]').required=false;$('#transfer-form [name=phone]').required=false;openContributionForm();return;}$('#transfer-amount').textContent=t(`ඔබ තෝරාගත් දායකත්වය: ${money(amount())}`,`Your selected contribution: ${money(amount())}`);const fields=[[t('බැංකුව','Bank'),config.bank.name],[t('ගිණුමේ නම','Account name'),config.bank.accountName],[t('ගිණුම් අංකය','Account number'),config.bank.accountNumber],[t('ශාඛාව','Branch'),config.bank.branch]];$('#bank-details').replaceChildren(...fields.map(([k,v])=>{const p=document.createElement('div');p.textContent=`${k}: ${v}`;return p;}));$('#transfer-form [name=amount]').value=amount();openContributionForm();});
+$('#contribute').addEventListener('click',()=>{
+  $('#transfer-amount').textContent=t(`ඔබ තෝරාගත් දායකත්වය: ${money(amount())}`,`Your selected contribution: ${money(amount())}`);
+  renderBankDetails();
+  $('#transfer-form [name=amount]').value=amount();
+  const submit=$('#transfer-form [type=submit]');
+  submit.disabled=false;
+  submit.textContent=t('දායකත්වය තහවුරු කරන්න ↗','Submit contribution ↗');
+  if(!config.enabled){
+    $('#transfer-form [name=reference]').required=false;
+    $('#transfer-form [name=phone]').required=false;
+  }
+  openContributionForm();
+});
 function showFilm(){soundscape.duck(true);const slot=$('#film-content');slot.replaceChildren();if(config.videoUrl){const v=document.createElement('video');v.src=config.videoUrl;v.controls=true;v.playsInline=true;v.preload='metadata';slot.append(v);}else{const scene=document.createElement('div');scene.className='film-placeholder';const h=document.createElement('h2');h.textContent=t('වෙරළට රැකවරණයක්. හෙටට හුස්මක්.','Shelter for the coast. Life for tomorrow.');scene.append(h);const p=document.createElement('p');p.textContent=t('හරිතායු ව්‍යාපෘතියේ වීඩියෝව ඉදිරියේදී එක් කෙරේ. දැනට ශ්‍රී ලංකාවේ කඩොලාන ගැන UNEP කෙටි වාර්තා වැඩසටහන බලන්න.','The Harithayu project film will be added here. Meanwhile, explore UNEP’s short documentary on Sri Lanka’s mangroves.');const a=document.createElement('a');a.href='https://www.unep.org/news-and-stories/video/how-sri-lankas-bet-mangroves-paying';a.target='_blank';a.rel='noopener';a.className='text-link';a.textContent=t('UNEP වීඩියෝව බලන්න ↗','Watch the UNEP documentary ↗');slot.append(scene,p,a);}$('#film-dialog').showModal();}
 $('#watch-film').addEventListener('click',showFilm);$$('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));$$('dialog').forEach(d=>{d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}});d.addEventListener('close',()=>d.querySelectorAll('video').forEach(v=>v.pause()));});
 const policies={privacy:{si:['පෞද්ගලිකත්වය','ඔබ දායකත්වයක් තහවුරු කිරීමට යැවූ විට ඔබේ නම, දුරකථන අංකය, ඊමේල් ලිපිනය, මුදල, පෞද්ගලික බැංකු රිසිට්පත සහ බැංකු transaction reference එක club එකේ ආරක්ෂිත සටහන්වල තබාගනී. ගෙවීම තහවුරු කිරීමට සහ ඒ ගැන ඔබ අමතන්නට පමණක් ඒවා භාවිත කෙරේ.','ඔබ කැමැත්ත ලබා දුන්නොත් පමණක් ඔබේ නම පොදු ලැයිස්තුවේ පෙන්වයි. ඔබේ ඊමේල් ලිපිනය හෝ බැංකු reference එක ප්‍රසිද්ධ නොකෙරේ. Card හෝ බැංකු login විස්තර අපි ලබා නොගනිමු.','භාෂා කැමැත්ත හා දායකත්ව තත්ත්වය මේ උපාංගයේ browser storage තුළ තබාගනී. Admin login සඳහා පමණක් ආරක්ෂිත session cookie එකක් යොදාගනී. Google Fonts භාවිත කිරීමෙන් එම සේවාවට සාමාන්‍ය connection තොරතුරු යැවේ.','ඔබේ සටහන් පිළිබඳ විමසීමට හෝ නම ඉවත් කිරීමට පහත club සම්බන්ධතා භාවිත කරන්න.'],en:['Privacy','When you submit a contribution for verification, the club stores your name, phone number, optional email, amount, private bank slip and transfer reference. These are used to verify the transfer and contact you about it.','Your name appears publicly only with your consent. Phone numbers, slips, email addresses and bank references are never published. Submission details are recorded in the club’s private Google Form and Sheet. Proofs are stored privately in Google Drive or Vercel private storage and can be opened only by authorized reviewers. We do not collect card details or bank login credentials.','Visitor analytics store a first-party session ID, page views, IP address and approximate IP location for up to 90 days. IP location is not GPS and may reflect a VPN. Privacy opt-outs omit saved IP/location. Donation submissions also record IP/location for club administration; that metadata is cleared after 90 days. Only authorized admins can view or export these details. Language preferences and pending contribution status are stored in this browser. Admin access uses a session cookie. Google Fonts receives normal connection information when fonts load.','Use the club contact details below to ask about your records or request removal of your public name.']},terms:{si:['දායකත්ව කොන්දේසි','හරිතායු යනු Leo Club of SLTC මගින් මන්නාරමේ කඩොලාන පැළ 500ක් රෝපණය සඳහා සැලසුම් කරන ව්‍යාපෘතියකි. එක් පැළයකට නියමිත දායකත්වය රු.100කි. නිශ්චිත ස්ථානය සහ දිනය තහවුරු වූ පසු පළ කෙරේ.','සිතියමේ පැළ සංකේතාත්මක දායකත්ව නිරූපණයකි. දායකත්වයක් තහවුරු වීමෙන් පැළයක් දැනටමත් රෝපණය කර ඇති බව හෝ එහි ජීවිත කාලය සහතික වන බව නොකියවේ.','රිසිට්පත සමඟ යැවූ දායකත්ව ස්වයංක්‍රීයව website එකතුවට එක් වේ. ඒවා බැංකු ගෙවීම් ලෙස වෙනම තහවුරු කර නැහැ. රිසිට්පතක් යැවීම පමණක් මුදල් ලැබුණු බවට සහතිකයක් නොවේ.','වැරදි හෝ දෙවරක් සිදු වූ මාරු හා මුදල් ආපසු ඉල්ලීම් සඳහා club එක අමතන්න. Club එක ගනුදෙනුව පරීක්ෂා කර පිළිතුරු ලබා දේ. අදාළ බැංකු ගාස්තු තිබිය හැකියි.','බැංකු හා club සම්බන්ධතා තහවුරු කර දායකත්ව භාරගැනීම විවෘත කරනතුරු මෙම අඩවිය මුදල් භාර නොගනී.'],en:['Contribution terms','Harithayu is a Leo Club of SLTC initiative planning to support 500 mangrove seedlings in Mannar. The contribution per seedling is LKR 100. The exact site and date will be announced once confirmed.','Map seedlings symbolise contributions. Confirmation does not mean a seedling has already been planted or guarantee its lifetime survival.','Proof submissions are included in the website total automatically. These are reported donations, not independently verified bank receipts. Uploading a proof does not guarantee that money has reached the club account.','Contact the club about mistaken or duplicate transfers and refund requests. The club will review the transaction and respond. Your bank may apply transfer charges.','The website accepts no funds until bank information and club contact details are verified and contributions are opened.']}};

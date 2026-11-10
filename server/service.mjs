@@ -14,7 +14,8 @@ const googleBridge=createGoogleBridge(env);
 const autoAccept=env.AUTO_ACCEPT_SUBMISSIONS==='true';
 async function syncStoredDonation(id){const d=await store.find(id);if(!d)return false;const receipt=await store.receipt(d.id);await googleBridge({id:d.id,name:d.name,email:d.email,amount:d.amount,reference:d.reference,publicName:d.public_name===1,createdAt:d.created_at,status:d.status,autoAccepted:d.auto_accepted===1,receipt:receipt||null});return true;}
 const origin=env.PUBLIC_ORIGIN || (env.VERCEL_PROJECT_PRODUCTION_URL?`https://${env.VERCEL_PROJECT_PRODUCTION_URL}`:`http://localhost:${port}`);
-const bank={ name:env.BANK_NAME || '', accountName:env.BANK_ACCOUNT_NAME || '', accountNumber:env.BANK_ACCOUNT_NUMBER || '', branch:env.BANK_BRANCH || '' };
+const defaultBank={ name:'Bank of Ceylon (BOC) - Padukka', accountName:'Leo Club of Sri Lanka Technology Campus', accountNumber:'80824610', branch:'Padukka (Branch Code: 678)' };
+const bank={ name:env.BANK_NAME || defaultBank.name, accountName:env.BANK_ACCOUNT_NAME || defaultBank.accountName, accountNumber:env.BANK_ACCOUNT_NUMBER || defaultBank.accountNumber, branch:env.BANK_BRANCH || defaultBank.branch };
 const enabled=Boolean(store) && env.DONATIONS_ENABLED==='true' && Object.values(bank).every(Boolean) && Boolean(env.CONTACT_EMAIL) && (env.ADMIN_PASSWORD || '').length>=16;
 const equal=(a,b)=>{ const x=Buffer.from(String(a || '')),y=Buffer.from(String(b || '')); return x.length===y.length && timingSafeEqual(x,y); };
 function json(res,status,data) { res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}); res.end(JSON.stringify(data)); }
