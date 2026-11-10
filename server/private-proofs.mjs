@@ -38,6 +38,17 @@ export function createPrivateProofs(env,sdk={head,get,handleUpload}) {
       if(!valid)throw Error('Upload a valid JPEG, PNG or PDF proof.');
       return {phone,mime:metadata.contentType,data:'blob:'+claim.path};
     },
+    async chunk(path,offset,length){
+      if(!/^slips\/[a-f0-9]{48}\.(png|jpg|pdf)$/.test(path))throw Error('Invalid proof path');
+      const meta=await sdk.head(path,{token});if(offset>=meta.size)return {bytes:Buffer.alloc(0),total:meta.size,mime:meta.contentType};
+      const end=Math.min(meta.size-1,offset+length-1);
+      const file=await sdk.get(path,{access:'private',token,useCache:false,headers:{Range:`bytes=${offset}-${end}`}});
+      if(!file?.stream)throw Error('Proof unavailable');
+      const reader=file.stream.getReader();let bytes=Buffer.alloc(0);
+      try{while(true){const part=await reader.read();if(part.done)break;bytes=Buffer.concat([bytes,Buffer.from(part.value)]);if(bytes.length>length)throw Error('Proof range not supported');}}finally{await reader.cancel();}
+      if(bytes.length!==end-offset+1)throw Error('Incomplete proof range');
+      return {bytes,total:meta.size,mime:meta.contentType};
+    },
     async stream(path,res){
       if(!/^slips\/[a-f0-9]{48}\.(png|jpg|pdf)$/.test(path))throw Error('Invalid private proof path.');
       const file=await sdk.get(path,{access:'private',token,useCache:false});
@@ -47,3 +58,4 @@ export function createPrivateProofs(env,sdk={head,get,handleUpload}) {
     }
   };
 }
+
