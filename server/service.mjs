@@ -84,7 +84,7 @@ return async(req,res)=>{
       if(!await rate(req,'donation',8)) return json(res,429,{error:'Too many submissions. Please try again later.'});
       const d=await body(req);
       const name=String(d.name || '').trim(),email=String(d.email || '').trim(),reference=String(d.reference || '').trim();
-      if(name.length<2 || name.length>100 || email.length>254 || (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) || !Number.isSafeInteger(d.amount) || d.amount<100 || d.amount>1000000 || reference.length<3 || reference.length>100 || d.consent!==true) return json(res,400,{error:'Please check your name, email, amount, transfer reference and consent.'});
+      if(name.length<2 || name.length>100 || email.length>254 || (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) || !Number.isSafeInteger(d.amount) || d.amount<100 || d.amount>1000000 || reference.length<3 || reference.length>100 || (path!=='/api/slip-donations'&&d.consent!==true)) return json(res,400,{error:'Please check your name, email, amount, transfer reference.'});
       let receipt=null;
       if(path==='/api/slip-donations') {
         const phone=String(d.phone||'').trim();
