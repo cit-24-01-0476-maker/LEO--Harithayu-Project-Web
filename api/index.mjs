@@ -17,11 +17,12 @@ export default async function vercelHandler(req,res) {
       }
       handler=createHandler({store});
     }
-    const route=new URL(req.url,'https://localhost').searchParams.get('route');
-    if(route!==null)req.url='/api/'+route.replace(/^\/+/, '');
+    const routed=new URL(req.url,'https://localhost'),route=routed.searchParams.get('route');
+    if(route!==null){routed.searchParams.delete('route');req.url='/api/'+route.replace(/^\/+/, '')+(routed.searchParams.size?'?'+routed.searchParams.toString():'');}
     return handler(req,res);
   } catch {
     res.writeHead(503,{'Content-Type':'application/json','Cache-Control':'no-store'});
     res.end(JSON.stringify({error:'The database connection is unavailable. Contributions remain closed.'}));
   }
 }
+
