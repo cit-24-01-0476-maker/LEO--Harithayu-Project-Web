@@ -1,3 +1,4 @@
+import {PUSH_SCHEMA,createPushStore} from './push-store.mjs';
 import {ANALYTICS_SCHEMA,createAnalyticsStore} from './analytics-store.mjs';
 // Turso's public SQL-over-HTTP protocol. No database driver is required.
 // https://github.com/tursodatabase/turso/blob/main/serverless/PROTOCOL.md
@@ -27,8 +28,11 @@ export async function createTursoStore(env,fetcher) {
   if(!columns.includes('audit_json'))await sql("ALTER TABLE donations ADD COLUMN audit_json TEXT NOT NULL DEFAULT '{}'");
   for(const text of ANALYTICS_SCHEMA)await sql(text);
   const analytics=createAnalyticsStore(async(text,args)=>(await sql(text,args)).rows,async statements=>{for(const [text,args] of statements)await sql(text,args);});
+  for(const statement of PUSH_SCHEMA)await sql(statement);
+  const push=createPushStore(async(text,args)=>(await sql(text,args)).rows,async statements=>{for(const [text,args] of statements)await sql(text,args);});
   return {
     ...analytics,
+    ...push,
     async archiveBefore(cutoff){const rows=(await sql('SELECT * FROM donations WHERE archived_at IS NULL AND created_at<=?',[cutoff])).rows;await sql('UPDATE donations SET archived_at=? WHERE archived_at IS NULL AND created_at<=?',[cutoff,cutoff]);return rows;},
     async insert(d) {if(d.receipt){await sql("INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at,status,auto_accepted,confirmed_at,audit_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",[d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName?1:0,d.createdAt,d.autoAccepted?'confirmed':'pending',d.autoAccepted?1:0,d.autoAccepted?d.createdAt:null,JSON.stringify(d.requestDetails||{})]);try{await sql('INSERT INTO donation_receipts (donation_id,phone,mime,data) VALUES (?,?,?,?)',[d.id,d.receipt.phone,d.receipt.mime,d.receipt.data]);}catch(e){await sql("DELETE FROM donations WHERE id=?",[d.id]);throw e;}return;}return sql('INSERT INTO donations (id,token,name,email,amount,reference,public_name,created_at,status,auto_accepted,confirmed_at,audit_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',[d.id,d.token,d.name,d.email,d.amount,d.reference,d.publicName?1:0,d.createdAt,d.autoAccepted?'confirmed':'pending',d.autoAccepted?1:0,d.autoAccepted?d.createdAt:null,JSON.stringify(d.requestDetails||{})]);},
     async receipt(id) {return (await sql('SELECT phone,mime,data FROM donation_receipts WHERE donation_id=?',[id])).rows[0];},
@@ -51,4 +55,5 @@ export async function createTursoStore(env,fetcher) {
     close() {}
   };
 }
+
 

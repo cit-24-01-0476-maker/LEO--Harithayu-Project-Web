@@ -282,3 +282,6 @@ html[lang=si] .mangrove-intro .intro-skip {
     font-size: 12.5px !important;
   }
 }
+
+.notification-invite{width:min(340px,100%);margin:0 auto 18px}.notification-eyebrow{font:9px/1.8 'DM Sans',sans-serif;letter-spacing:2px;color:#d0e497;margin:0 0 10px}.notification-invite #notification-status{color:#c9d8be;font:11px/1.9 'DM Sans','Noto Sans Sinhala',sans-serif;max-width:320px;margin:0 auto 18px}.notification-invite .welcome-enter{margin:auto;width:min(300px,100%);font-size:12px}.notification-settings{margin:20px 0 8px}.welcome-content .welcome-tagline{margin-bottom:24px}@media(max-height:600px){.welcome-club{margin-bottom:12px}.welcome-content h1{font-size:42px}.welcome-content .welcome-tagline{margin-bottom:14px}.notification-invite{margin-bottom:10px}.notification-invite #notification-status{margin-bottom:12px}.welcome-audio{margin-top:12px}}
+

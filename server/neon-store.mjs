@@ -1,3 +1,4 @@
+import {PUSH_SCHEMA,createPushStore} from './push-store.mjs';
 import {ANALYTICS_SCHEMA,createAnalyticsStore} from './analytics-store.mjs';
 import { neon } from '@neondatabase/serverless';
 
@@ -21,8 +22,11 @@ export async function createNeonStore(env, client) {
   const params=text=>{let i=0;return text.replace(/\?/g,()=>'$'+(++i));};
   const analytics=createAnalyticsStore((text,args)=>sql.query(params(text),args),statements=>sql.transaction(statements.map(([text,args])=>sql.query(params(text),args))));
   await sql.transaction(ANALYTICS_SCHEMA.map(text=>sql.query(text)));
+  await sql.transaction(PUSH_SCHEMA.map(text=>sql.query(text)));
+  const push=createPushStore((text,args)=>sql.query(params(text),args),statements=>sql.transaction(statements.map(([text,args])=>sql.query(params(text),args))));
   return {
     ...analytics,
+    ...push,
     async archiveBefore(cutoff){return sql.query('UPDATE donations SET archived_at=$1 WHERE archived_at IS NULL AND created_at<=$1 RETURNING *',[cutoff]);},
     async insert(d) {
       try {
@@ -54,4 +58,5 @@ export async function createNeonStore(env, client) {
     close() {}
   };
 }
+
 

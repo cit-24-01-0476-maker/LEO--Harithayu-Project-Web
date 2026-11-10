@@ -1,3 +1,4 @@
+import {PUSH_SCHEMA,createPushStore} from './push-store.mjs';
 import {ANALYTICS_SCHEMA,createAnalyticsStore} from './analytics-store.mjs';
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'node:fs';
@@ -27,8 +28,11 @@ export function createStore(path) {
   if(!columns.includes('audit_json'))db.exec("ALTER TABLE donations ADD COLUMN audit_json TEXT NOT NULL DEFAULT '{}'");
   db.exec(ANALYTICS_SCHEMA.join(';'));
   const analytics=createAnalyticsStore(async(text,args)=>db.prepare(text).all(...args),async(statements)=>{db.exec('BEGIN');try{for(const [text,args] of statements)db.prepare(text).run(...args);db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;}});
+  db.exec(PUSH_SCHEMA.join(';'));
+  const push=createPushStore(async(text,args)=>db.prepare(text).all(...args),async(statements)=>{db.exec('BEGIN');try{for(const [text,args] of statements)db.prepare(text).run(...args);db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;}});
   return {
     ...analytics,
+    ...push,
     db,
     archiveBefore(cutoff){const rows=db.prepare('SELECT * FROM donations WHERE archived_at IS NULL AND created_at<=?').all(cutoff);db.prepare('UPDATE donations SET archived_at=? WHERE archived_at IS NULL AND created_at<=?').run(cutoff,cutoff);return rows;},
     createSession(id,expires) {db.prepare('DELETE FROM admin_sessions WHERE expires<?').run(Date.now());db.prepare('INSERT INTO admin_sessions (id,expires) VALUES (?,?)').run(id,expires);},
@@ -52,4 +56,5 @@ export function createStore(path) {
     close() { db.close(); }
   };
 }
+
 
