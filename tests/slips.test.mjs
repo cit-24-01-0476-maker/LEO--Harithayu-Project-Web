@@ -19,3 +19,22 @@ test('slip uploads stay private and only approved funds enter the public tree',a
  const summary=await (await fetch(origin+'/api/summary')).json();assert.equal(summary.amount,300);assert.equal(summary.donors[0].name,'Leaf Donor');assert.ok(!JSON.stringify(summary).includes(payload.phone));assert.ok(!JSON.stringify(summary).includes('base64'));assert.equal((await post('/api/slip-donations',payload)).status,409);
  }finally{await new Promise(r=>server.close(r));store.close();}
 });
+
+test('PDF slip uploads are accepted, served with application/pdf and viewable by admin', async () => {
+ const store=createStore(':memory:');const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`;
+ server.on('request',createHandler({store,env:{PUBLIC_ORIGIN:origin,DONATIONS_ENABLED:'true',BANK_NAME:'Bank',BANK_ACCOUNT_NAME:'Club',BANK_ACCOUNT_NUMBER:'123',BANK_BRANCH:'Branch',CONTACT_EMAIL:'club@example.com',ADMIN_PASSWORD:'long-test-password-only'}}));
+ const post=(path,d,cookie)=>fetch(origin+path,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',...(cookie?{Cookie:cookie}:{})},body:JSON.stringify(d)});
+ try{
+ const pdfBase64=Buffer.from('%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF').toString('base64');
+ const payload={name:'PDF Donor',phone:'0779998877',email:'pdf@example.com',amount:500,reference:'PDF-SLIP-001',publicName:true,consent:true,slip:`data:application/pdf;base64,${pdfBase64}`};
+ const res=await post('/api/slip-donations',payload);
+ assert.equal(res.status,201);
+ const {id}=await res.json();
+ const login=await post('/api/admin/login',{password:'long-test-password-only'});const cookie=login.headers.get('set-cookie').split(';')[0];
+ const slip=await fetch(origin+'/api/admin/slips/'+id,{headers:{Cookie:cookie}});
+ assert.equal(slip.status,200);
+ assert.equal(slip.headers.get('content-type'),'application/pdf');
+ const bytes=Buffer.from(await slip.arrayBuffer());
+ assert.equal(bytes.subarray(0,4).toString(),'%PDF');
+ }finally{await new Promise(r=>server.close(r));store.close();}
+});

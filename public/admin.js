@@ -5,7 +5,32 @@ const date=v=>v?new Date(typeof v==='number'||/^\d+$/.test(String(v))?Number(v):
 const text=(tag,value,className)=>{const n=document.createElement(tag);n.textContent=value??'—';if(className)n.className=className;return n;};
 async function api(path,options={}){const r=await fetch(path,options),d=await r.json();if(!r.ok){const e=Error(d.error||'Request failed.');e.status=r.status;throw e;}return d;}
 function filtered(){const query=$('#admin-search').value.trim().toLowerCase();return data.donations.filter(d=>($('#include-archived').checked||!d.archived_at)&&JSON.stringify([d.name,d.email,d.phone,d.reference,d.id,d.requestDetails]).toLowerCase().includes(query));}
-function openProof(d){const url='/api/admin/slips/'+encodeURIComponent(d.id);$('#slip-title').textContent=d.name+' · '+money(d.amount);$('#slip-info').textContent=d.reference+' · '+date(d.created_at);$('#slip-image').src=url;$('#slip-download').href=url;$('#slip-download').download='Harithayu-proof-'+d.id+(d.mime==='image/png'?'.png':'.jpg');$('#slip-dialog').showModal();}
+function openProof(d){
+  const url='/api/admin/slips/'+encodeURIComponent(d.id);
+  $('#slip-title').textContent=d.name+' · '+money(d.amount);
+  $('#slip-info').textContent=d.reference+' · '+date(d.created_at);
+  const ext=d.mime==='application/pdf'?'.pdf':(d.mime==='image/png'?'.png':'.jpg');
+  $('#slip-download').href=url;
+  $('#slip-download').download='Harithayu-proof-'+d.id+ext;
+  let frame=$('#slip-frame');
+  if(d.mime==='application/pdf'){
+    $('#slip-image').hidden=true;
+    if(!frame){
+      frame=document.createElement('iframe');
+      frame.id='slip-frame';
+      frame.className='slip-frame';
+      frame.title='Submitted PDF proof';
+      $('#slip-image').after(frame);
+    }
+    frame.hidden=false;
+    frame.src=url;
+  }else{
+    if(frame)frame.hidden=true;
+    $('#slip-image').hidden=false;
+    $('#slip-image').src=url;
+  }
+  $('#slip-dialog').showModal();
+}
 function proofButton(d){const b=text('button','Open private proof');b.type='button';b.addEventListener('click',()=>openProof(d));return b;}
 function renderDonations(){
  const rows=filtered(),pages=Math.max(1,Math.ceil(rows.length/40));page=Math.min(page,pages-1);

@@ -12,6 +12,8 @@ test('100 MB private uploads enforce signed paths, expiry, MIME and server-side 
     async handleUpload(options){seen=await options.onBeforeGenerateToken(options.body.path,options.body.payload,true);return {type:'blob.generate-client-token'};}
   };
   const proofs=createPrivateProofs(env,sdk),claim=proofs.ticket('image/png',MAX_PROOF_BYTES);
+  const pdfClaim=proofs.ticket('application/pdf',1000);
+  assert.ok(pdfClaim.path.endsWith('.pdf'));
   assert.throws(()=>proofs.ticket('image/png',MAX_PROOF_BYTES+1));assert.throws(()=>proofs.ticket('text/html',100));
   await proofs.handle({}, {path:claim.path,payload:JSON.stringify(claim)});
   assert.equal(seen.maximumSizeInBytes,104857600);assert.equal(seen.allowOverwrite,false);

@@ -68,12 +68,16 @@ return async(req,res)=>{
           if(!proofs||!(/^[+0-9 ()-]{9,25}$/).test(phone))return json(res,400,{error:'Enter a valid phone number.'});
           try{receipt=await proofs.verify(d.receiptBlob,phone);}catch(e){return json(res,400,{error:e.message});}
         }else{
-        const match=/^data:image\/(png|jpeg);base64,([A-Za-z0-9+/]+={0,2})$/.exec(d.slip||'');
-        if(!/^[+0-9 ()-]{9,25}$/.test(phone)||!match)return json(res,400,{error:'Enter a valid phone number and upload a JPEG or PNG bank slip.'});
+        const match=/^data:(image\/(?:png|jpeg)|application\/pdf);base64,([A-Za-z0-9+/]+={0,2})$/.exec(d.slip||'');
+        if(!/^[+0-9 ()-]{9,25}$/.test(phone)||!match)return json(res,400,{error:'Enter a valid phone number and upload a JPEG, PNG or PDF bank slip.'});
+        const mimeType=match[1];
         const bytes=Buffer.from(match[2],'base64');
-        const valid=match[1]==='png'?bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])):bytes[0]===255&&bytes[1]===216&&bytes[2]===255;
-        if(!valid||bytes.length>1048576||bytes.length<20)return json(res,400,{error:'Upload a valid JPEG or PNG slip, up to 1 MB.'});
-        receipt={phone,mime:`image/${match[1]}`,data:match[2]};
+        let valid=false;
+        if(mimeType==='image/png')valid=bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]));
+        else if(mimeType==='image/jpeg')valid=bytes[0]===255&&bytes[1]===216&&bytes[2]===255;
+        else if(mimeType==='application/pdf')valid=bytes.subarray(0,4).toString()==='%PDF';
+        if(!valid||bytes.length>1048576||bytes.length<20)return json(res,400,{error:'Upload a valid JPEG, PNG or PDF slip, up to 1 MB.'});
+        receipt={phone,mime:mimeType,data:match[2]};
         }
       }
       if(autoAccept&&!receipt)return json(res,400,{error:'Upload your proof before submitting a donation.'});

@@ -35,7 +35,7 @@ function doPost(e){
  const form=FormApp.openById(props.getProperty('FORM_ID')),mapping=JSON.parse(props.getProperty('FIELD_MAP'));
  const folder=DriveApp.getFolderById(props.getProperty('SLIP_FOLDER_ID'));
  let slipUrl='';
- if(payload.receipt){if(!['image/png','image/jpeg'].includes(payload.receipt.mime))throw Error('Invalid slip');const bytes=Utilities.base64Decode(payload.receipt.data);if(bytes.length>1048576)throw Error('Slip too large');const name=payload.id+(payload.receipt.mime==='image/png'?'.png':'.jpg');const files=folder.getFilesByName(name);const file=files.hasNext()?files.next():folder.createFile(Utilities.newBlob(bytes,payload.receipt.mime,name));file.setSharing(DriveApp.Access.PRIVATE,DriveApp.Permission.VIEW);slipUrl=file.getUrl();}
+ if(payload.receipt){if(!['image/png','image/jpeg','application/pdf'].includes(payload.receipt.mime))throw Error('Invalid slip');const bytes=Utilities.base64Decode(payload.receipt.data);if(bytes.length>1048576)throw Error('Slip too large');const ext=payload.receipt.mime==='application/pdf'?'.pdf':(payload.receipt.mime==='image/png'?'.png':'.jpg');const name=payload.id+ext;const files=folder.getFilesByName(name);const file=files.hasNext()?files.next():folder.createFile(Utilities.newBlob(bytes,payload.receipt.mime,name));file.setSharing(DriveApp.Access.PRIVATE,DriveApp.Permission.VIEW);slipUrl=file.getUrl();}
  const safeText=v=>/^[=+@\-]/.test(String(v))?"'"+v:String(v);
  const values=[payload.id,safeText(payload.name),safeText(payload.email||''),safeText(payload.phone||''),String(payload.amount),safeText(payload.reference),slipUrl,payload.publicName?'Yes':'No',payload.createdAt];
  // Recover an existing form response if a previous request stopped before recording the review row.
