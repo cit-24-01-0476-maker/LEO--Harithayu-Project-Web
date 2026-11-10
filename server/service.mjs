@@ -30,6 +30,20 @@ return async(req,res)=>{
   res.setHeader('Content-Security-Policy',"default-src 'self'; img-src 'self' data:; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self' https://blob.vercel-storage.com https://*.blob.vercel-storage.com; media-src 'self' https:; frame-src https://www.youtube-nocookie.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none'");
   try {
     const url=new URL(req.url,origin), path=url.pathname;
+    // Private Google migration channel: shared-secret header, never a public receipt URL.
+    if(path==='/api/integrations/drive-proofs'&&req.method==='GET'){
+      if(!env.GOOGLE_BRIDGE_SECRET||!equal(req.headers['x-harithayu-bridge'],env.GOOGLE_BRIDGE_SECRET))return json(res,401,{error:'Unauthorized'});
+      if(!store)return json(res,503,{error:'Storage unavailable'});
+      const id=url.searchParams.get('id');
+      if(!id){const offset=Number(url.searchParams.get('offset')||0);if(!Number.isSafeInteger(offset)||offset<0)return json(res,400,{error:'Invalid offset'});
+        const all=(await store.adminDetails()).filter(d=>Number(d.has_slip));return json(res,200,{donations:all.slice(offset,offset+25).map(d=>({id:d.id,name:d.name})),next:offset+25<all.length?offset+25:null,total:all.length});}
+      if(!/^[a-f0-9]{24}$/.test(id))return json(res,400,{error:'Invalid donation'});
+      const offset=Number(url.searchParams.get('offset')||0),length=3*1024*1024;
+      if(!Number.isSafeInteger(offset)||offset<0||offset>MAX_PROOF_BYTES)return json(res,400,{error:'Invalid offset'});
+      const slip=await store.receipt(id);if(!slip)return json(res,404,{error:'Proof not found'});
+      const part=slip.data.startsWith('blob:')?await proofs.chunk(slip.data.slice(5),offset,length):(()=>{const all=Buffer.from(slip.data,'base64');return {bytes:all.subarray(offset,offset+length),total:all.length,mime:slip.mime};})();
+      res.writeHead(200,{'Content-Type':part.mime,'Content-Length':part.bytes.length,'X-Proof-Total-Bytes':part.total,'Cache-Control':'private, no-store'});return res.end(part.bytes);
+    }
     if(path==='/api/slip-upload'&&req.method==='POST'){
       if(!enabled||!proofs)return json(res,503,{error:'Private uploads are not available.'});
       const input=await body(req);
@@ -138,3 +152,4 @@ return async(req,res)=>{
   } catch(e) { if(res.headersSent){res.destroy();return;}if(e instanceof SyntaxError || e.message==='Request too large') return json(res,400,{error:'Invalid request.'}); console.error('Request failed:',e.message); json(res,500,{error:'Something went wrong. Please try again.'}); }
 };
 }
+
