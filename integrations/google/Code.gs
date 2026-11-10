@@ -139,6 +139,7 @@ function syncExistingSlipsFromWebsite(customSecret) {
   const response = UrlFetchApp.fetch(url, {
     method: 'post',
     contentType: 'application/json',
+    headers: { 'Origin': 'https://leo-harithayu.vercel.app' },
     payload: JSON.stringify({ key: 'harithayu-drive-sync', secret: secret }),
     muteHttpExceptions: true
   });

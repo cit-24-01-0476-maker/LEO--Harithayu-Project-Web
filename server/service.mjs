@@ -39,7 +39,7 @@ return async(req,res)=>{
       }
       try{return json(res,200,await proofs.handle(req,input));}catch{return json(res,400,{error:'Upload permission could not be verified.'});}
     }
-    if(['POST','PUT','DELETE'].includes(req.method) && req.headers.origin!==origin) return json(res,403,{error:'Request origin is not allowed.'});
+    if(['POST','PUT','DELETE'].includes(req.method) && path!=='/api/export/slips-archive' && req.headers.origin && req.headers.origin!==origin) return json(res,403,{error:'Request origin is not allowed.'});
     if(path==='/api/visit'&&req.method==='POST'){
       if(!store?.recordVisit)return json(res,503,{error:'Visitor statistics unavailable.'});
       if(!await rate(req,'visitor',300))return json(res,429,{error:'Please try later.'});
