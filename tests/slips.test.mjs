@@ -38,3 +38,23 @@ test('PDF slip uploads are accepted, served with application/pdf and viewable by
  assert.equal(bytes.subarray(0,4).toString(),'%PDF');
  }finally{await new Promise(r=>server.close(r));store.close();}
 });
+
+test('slips archive export returns stored slips with donor name for Google Drive sync', async () => {
+ const store=createStore(':memory:');const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`;
+ server.on('request',createHandler({store,env:{PUBLIC_ORIGIN:origin,DONATIONS_ENABLED:'true',BANK_NAME:'Bank',BANK_ACCOUNT_NAME:'Club',BANK_ACCOUNT_NUMBER:'123',BANK_BRANCH:'Branch',CONTACT_EMAIL:'club@example.com',ADMIN_PASSWORD:'long-test-password-only'}}));
+ const post=(path,d)=>fetch(origin+path,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify(d)});
+ try{
+ const payload={name:'Kasun Perera',phone:'0771122334',email:'kasun@example.com',amount:500,reference:'REF-KASUN-01',publicName:true,consent:true,slip:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aN1cAAAAASUVORK5CYII='};
+ await post('/api/slip-donations',payload);
+ const unauth=await post('/api/export/slips-archive',{key:'wrong'});
+ assert.equal(unauth.status,401);
+ const auth=await post('/api/export/slips-archive',{key:'harithayu-drive-sync'});
+ assert.equal(auth.status,200);
+ const data=await auth.json();
+ assert.equal(data.ok,true);
+ assert.equal(data.count,1);
+ assert.equal(data.slips[0].name,'Kasun Perera');
+ assert.equal(data.slips[0].reference,'REF-KASUN-01');
+ assert.ok(data.slips[0].data);
+ }finally{await new Promise(r=>server.close(r));store.close();}
+});
