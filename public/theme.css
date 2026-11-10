@@ -82,3 +82,12 @@ html[data-theme=dark] .brand .living-brand-logo{filter:brightness(1.12) saturate
 .brand .living-brand-logo .logo-sun-drift{animation:logo-sunlight 8s ease-in-out infinite}
 @media(prefers-reduced-motion:reduce){.brand .living-brand-logo *{animation:none!important}.brand .living-brand-logo{transform:none}}
 
+
+/* Bank card values and labels need their own dark-theme foreground colours. */
+html[data-theme=dark] #bank-details{background:#20382a;border-color:#54704b;color:#f0f5e8}
+html[data-theme=dark] #bank-details .bank-label{color:#c9d8be;font-weight:500}
+html[data-theme=dark] #bank-details .bank-value{color:#f0f5e8;font-weight:700;opacity:1;overflow-wrap:anywhere}
+html[data-theme=dark] #bank-details .bank-row{border-bottom-color:#50664a}
+html[data-theme=dark] #bank-details .bank-copy-btn{background:#d0e497;color:#173b2a;border:1px solid #dcebb5}
+html[data-theme=dark] #bank-details .bank-copy-btn:hover{background:#e3efc6}
+html[data-theme=dark] #bank-details .bank-copy-btn:focus-visible{outline:2px solid #f0f5e8;outline-offset:3px}
