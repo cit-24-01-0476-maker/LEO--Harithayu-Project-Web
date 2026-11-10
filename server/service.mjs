@@ -102,33 +102,6 @@ return async(req,res)=>{
       res.setHeader('Set-Cookie',`harithayu_admin=${sid}; HttpOnly; SameSite=Strict; Path=/api/admin; Max-Age=3600${origin.startsWith('https:')?'; Secure':''}`);
       return json(res,200,{ok:true});
     }
-    
-    if(path==='/api/export/slips-archive' && req.method==='POST') {
-      if(!store) return json(res,503,{error:'Database unavailable.'});
-      const input = await body(req);
-      const secret = env.GOOGLE_BRIDGE_SECRET || env.ADMIN_PASSWORD;
-      const authorized = (secret && input.secret && input.secret === secret) || (input.key && input.key === 'harithayu-drive-sync') || await admin(req);
-      if(!authorized) return json(res,401,{error:'Unauthorized.'});
-      const donations = await store.adminDetails();
-      const slips = [];
-      for(const d of donations) {
-        if(d.has_slip) {
-          const receipt = await store.receipt(d.id);
-          if(receipt && receipt.data) {
-            slips.push({
-              id: d.id,
-              name: d.name,
-              amount: d.amount,
-              reference: d.reference,
-              createdAt: d.created_at,
-              mime: receipt.mime,
-              data: receipt.data
-            });
-          }
-        }
-      }
-      return json(res, 200, { ok: true, count: slips.length, slips });
-    }
     if(path.startsWith('/api/admin/')) {
       if(!await admin(req)) return json(res,401,{error:'Please sign in.'});
       if(path==='/api/admin/logout' && req.method==='POST') { const sid=req.headers.cookie?.match(/harithayu_admin=([^;]+)/)?.[1]; await store.deleteSession(sid); res.setHeader('Set-Cookie','harithayu_admin=; HttpOnly; SameSite=Strict; Path=/api/admin; Max-Age=0'); return json(res,200,{ok:true}); }
