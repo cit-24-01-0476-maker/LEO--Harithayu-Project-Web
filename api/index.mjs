@@ -9,8 +9,6 @@ export default async function vercelHandler(req,res) {
         : process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN
         ? await (await import('../server/turso-store.mjs')).createTursoStore(process.env)
         : null;
-      const cleanup=await (await import('../server/cleanup-approved-tests.mjs')).cleanupApprovedTests(process.env);
-      if(cleanup.deleted)console.log('Removed '+cleanup.deleted+' specifically approved test donations.');
       const cutoff=process.env.ARCHIVE_DONATIONS_BEFORE;
       if(store&&cutoff){
         if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(cutoff))throw Error('Invalid archive cutoff');
