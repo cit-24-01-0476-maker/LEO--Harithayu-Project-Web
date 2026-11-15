@@ -298,3 +298,11 @@ html[lang=si] .mangrove-intro .intro-skip {
 @media(max-width:650px){.welcome-secondary-logo{width:100px;height:100px;margin-bottom:20px;max-height:15svh}}
 @media(max-height:650px){.welcome-secondary-logo{width:76px;height:76px;max-height:13svh;margin-bottom:12px}.welcome-content{padding-block:16px}.welcome-club{margin-bottom:16px}}
 @media(max-height:500px){.welcome-secondary-logo{width:58px;height:58px;margin-bottom:8px}.welcome-content{padding-block:8px}.welcome-club{margin-bottom:8px}}
+
+/* Gentle dimensional motion for the welcome emblem. */
+.welcome-secondary-logo{transform-origin:50% 55%;transform-style:preserve-3d;backface-visibility:hidden;animation:welcome-emblem-float 10s ease-in-out infinite}
+@keyframes welcome-emblem-float{
+  0%,100%{transform:perspective(720px) translateY(2px) rotateX(3deg) rotateY(-12deg) rotateZ(-1deg);filter:drop-shadow(3px 7px 7px #0006)}
+  50%{transform:perspective(720px) translateY(-5px) rotateX(-3deg) rotateY(12deg) rotateZ(1deg);filter:drop-shadow(-3px 11px 9px #0006)}
+}
+@media(prefers-reduced-motion:reduce){.welcome-secondary-logo{animation:none;transform:none}}
