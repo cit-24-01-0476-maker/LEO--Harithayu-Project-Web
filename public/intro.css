@@ -308,7 +308,7 @@ html[lang=si] .mangrove-intro .intro-skip {
 @media(prefers-reduced-motion:reduce){.welcome-secondary-logo{animation:none;transform:none}}
 
 /* Footer counterpart to the welcome emblem, beside the sound control area. */
-.footer-secondary-mark{display:flex;justify-content:flex-end;align-items:center;padding:22px 0 76px;pointer-events:none}
+.footer-secondary-mark{position:fixed;right:20px;bottom:76px;z-index:149;display:flex;justify-content:center;align-items:center;width:104px;pointer-events:none}
 .footer-secondary-logo{display:block;width:104px;height:104px;flex-shrink:0;overflow:visible;transform-origin:50% 55%;transform-style:preserve-3d;backface-visibility:hidden;filter:drop-shadow(0 5px 7px #0003);animation:welcome-emblem-float 10s ease-in-out infinite}
-@media(max-width:650px){.footer-secondary-mark{padding:18px 0 70px}.footer-secondary-logo{width:84px;height:84px}}
+@media(max-width:650px){.footer-secondary-mark{right:12px;bottom:62px;width:84px}.footer-secondary-logo{width:84px;height:84px}}
 @media(prefers-reduced-motion:reduce){.footer-secondary-logo{animation:none;transform:none}}
