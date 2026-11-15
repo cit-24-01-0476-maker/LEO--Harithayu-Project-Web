@@ -292,3 +292,9 @@ html[lang=si] .mangrove-intro .intro-skip {
 @media(max-width:650px){.mangrove-intro .intro-secondary-logo{width:92px;height:92px;top:max(25px,5svh)}}
 @media(max-height:500px){.mangrove-intro .intro-secondary-logo{left:auto;right:24px;top:20px;transform:none;width:70px;height:70px;max-height:none}}
 @media(prefers-reduced-motion:reduce){.mangrove-intro .intro-secondary-logo{animation:none}}
+
+/* Supplied emblem belongs to the welcome screen, above the club signature. */
+.welcome-secondary-logo{display:block;width:118px;height:118px;max-height:17svh;flex-shrink:0;margin:0 auto 22px;overflow:visible;filter:drop-shadow(0 5px 7px #0005)}
+@media(max-width:650px){.welcome-secondary-logo{width:100px;height:100px;margin-bottom:20px;max-height:15svh}}
+@media(max-height:650px){.welcome-secondary-logo{width:76px;height:76px;max-height:13svh;margin-bottom:12px}.welcome-content{padding-block:16px}.welcome-club{margin-bottom:16px}}
+@media(max-height:500px){.welcome-secondary-logo{width:58px;height:58px;margin-bottom:8px}.welcome-content{padding-block:8px}.welcome-club{margin-bottom:8px}}
