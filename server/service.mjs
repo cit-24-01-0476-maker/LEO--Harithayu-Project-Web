@@ -110,7 +110,7 @@ return async(req,res)=>{
       donation.requestDetails=requestDetails(req,env);
       try {await store.insert(donation);} catch(e) {if(e.message.includes('UNIQUE')) return json(res,409,{error:'This transfer reference was already submitted. Please contact the club if you need help.'}); throw e;}
       if(push&&donation.autoAccepted){try{await push.enqueue(donation);drainPush();}catch{console.error('Donation notification queue unavailable.');}}
-      let sheetSync='not-configured';if(googleBridge){try{await googleBridge(donation);sheetSync='synced';}catch{sheetSync='pending';console.error('Google donation sync needs an admin retry.');}}
+      let sheetSync='not-configured';if(googleBridge){sheetSync='pending';background(googleBridge(donation).catch(()=>{console.error('Google donation sync needs an admin retry.');}));}
       return json(res,201,{id:donation.id,token:donation.token,status:autoAccept?'accepted':'pending',sheetSync});
     }
     if(path.startsWith('/api/donations/') && req.method==='GET') {
